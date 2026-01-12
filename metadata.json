@@ -1,0 +1,9 @@
+
+{
+  "name": "WEBİLKOKULU - Dijital Eğitim Platformu",
+  "description": "MEB müfredatı uyumlu, Gemini AI destekli, interaktif kütüphane ve müzik odası içeren kapsamlı ilkokul eğitim platformu.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
