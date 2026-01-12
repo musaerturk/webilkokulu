@@ -1,8 +1,8 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { QuizResult, StudyPlan, UserProfile, Assessment5N1K, Book } from "../types";
+import { QuizResult, StudyPlan, UserProfile, Assessment5N1K, Book } from "../types.ts";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 // 5N1K Değerlendirme Servisi
 export const grade5N1K = async (book: Book, answers: Assessment5N1K): Promise<{ score: number, feedback: string }> => {

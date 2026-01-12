@@ -1,8 +1,8 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { Grade, Subject, PresentationStep, Activity, Question, ActivityType } from "../types";
+import { Grade, Subject, PresentationStep, Activity, Question, ActivityType } from "../types.ts";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const getGradeLabel = (grade: Grade) => grade === 'SC' ? 'Sesten Cümleye (Okuma Yazma Hazırlık)' : `${grade}. Sınıf`;
 
@@ -171,6 +171,7 @@ export const generateSlideImage = async (description: string): Promise<string | 
   return undefined;
 };
 
+// Add missing generateAISpeech export to fix AdminWorkspace.tsx import error.
 export const generateAISpeech = async (text: string): Promise<string | undefined> => {
   try {
     const response = await ai.models.generateContent({
@@ -178,11 +179,18 @@ export const generateAISpeech = async (text: string): Promise<string | undefined
       contents: [{ parts: [{ text }] }],
       config: {
         responseModalities: [Modality.AUDIO],
-        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: { voiceName: 'Kore' },
+          },
+        },
       },
     });
     return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  } catch (error) { return undefined; }
+  } catch (error) {
+    console.error("TTS hatası", error);
+    return undefined;
+  }
 };
 
 export const generateAssessmentAI = async (grade: Grade, subject: Subject, count: number, outcome: string): Promise<any> => {

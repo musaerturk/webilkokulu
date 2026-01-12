@@ -1,23 +1,23 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Layout from './components/Layout';
-import LandingPage from './components/LandingPage';
-import AIAdvisor from './components/AIAdvisor';
-import TopicWorkspace from './components/TopicWorkspace';
-import AdminWorkspace from './components/AdminWorkspace';
-import AdminUserManagement from './components/AdminUserManagement';
-import AdminGamification from './components/AdminGamification';
-import AdminMascotManagement from './components/AdminMascotManagement';
-import AdminSiteSettings from './components/AdminSiteSettings';
-import AdminLibraryManagement from './components/AdminLibraryManagement';
-import AdminMusicManagement from './components/AdminMusicManagement';
-import UserProfilePanel from './components/UserProfilePanel';
-import BilkusWorkspace from './components/BilkusWorkspace';
-import LibraryWorkspace from './components/LibraryWorkspace';
-import MusicRoom from './components/MusicRoom';
-import Mascot from './components/Mascot';
-import { Grade, Subject, Topic, QuizResult, Unit, UserProfile, RankDefinition, Badge, Quest, MascotSettings, SiteSettings, Book, Song } from './types';
-import { MOCK_UNITS, GRADE_SUBJECTS, SUBJECT_ICONS, MOCK_BOOKS } from './constants';
+import Layout from './components/Layout.tsx';
+import LandingPage from './components/LandingPage.tsx';
+import AIAdvisor from './components/AIAdvisor.tsx';
+import TopicWorkspace from './components/TopicWorkspace.tsx';
+import AdminWorkspace from './components/AdminWorkspace.tsx';
+import AdminUserManagement from './components/AdminUserManagement.tsx';
+import AdminGamification from './components/AdminGamification.tsx';
+import AdminMascotManagement from './components/AdminMascotManagement.tsx';
+import AdminSiteSettings from './components/AdminSiteSettings.tsx';
+import AdminLibraryManagement from './components/AdminLibraryManagement.tsx';
+import AdminMusicManagement from './components/AdminMusicManagement.tsx';
+import UserProfilePanel from './components/UserProfilePanel.tsx';
+import BilkusWorkspace from './components/BilkusWorkspace.tsx';
+import LibraryWorkspace from './components/LibraryWorkspace.tsx';
+import MusicRoom from './components/MusicRoom.tsx';
+import Mascot from './components/Mascot.tsx';
+import { Grade, Subject, Topic, QuizResult, Unit, UserProfile, RankDefinition, Badge, Quest, MascotSettings, SiteSettings, Book, Song } from './types.ts';
+import { MOCK_UNITS, GRADE_SUBJECTS, SUBJECT_ICONS, MOCK_BOOKS } from './constants.tsx';
 
 const GUEST_USER: UserProfile = {
   id: 'guest',
