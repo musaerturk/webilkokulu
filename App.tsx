@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout.tsx';
 import LandingPage from './components/LandingPage.tsx';
 import TopicWorkspace from './components/TopicWorkspace.tsx';
@@ -15,6 +15,7 @@ import MusicRoom from './components/MusicRoom.tsx';
 import AIAdvisor from './components/AIAdvisor.tsx';
 import { Grade, Subject, Topic, Unit, UserProfile, SiteSettings, MascotSettings, Book, Song, QuizResult, SubjectStyle } from './types.ts';
 import { MOCK_UNITS, MOCK_BOOKS, INITIAL_GRADE_SUBJECTS, INITIAL_SUBJECT_CONFIG } from './constants.tsx';
+import { saveToCloud, loadFromCloud, GlobalState } from './services/dbService';
 
 const BRAND_W_LOGO = "https://raw.githubusercontent.com/Anil-Can/image-storage/main/webilkokulu-logo-new.png";
 
@@ -61,15 +62,15 @@ const App: React.FC = () => {
   const [showStudentLogin, setShowStudentLogin] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [loginInput, setLoginInput] = useState({ user: '', pass: '' });
+  const [isSyncing, setIsSyncing] = useState(false);
 
+  // States
   const [unitsData, setUnitsData] = useState<Record<string, Unit[]>>(MOCK_UNITS);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(INITIAL_SITE_SETTINGS);
   const [mascots, setMascots] = useState<MascotSettings[]>(DEFAULT_MASCOTS);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [books, setBooks] = useState<Book[]>(MOCK_BOOKS);
   const [songs, setSongs] = useState<Song[]>([]);
-
-  // Dinamik Ders Yapılandırması State'leri
   const [subjectConfig, setSubjectConfig] = useState<Record<Subject, SubjectStyle>>(INITIAL_SUBJECT_CONFIG);
   const [gradeSubjectsMapping, setGradeSubjectsMapping] = useState<Record<Grade, Subject[]>>(INITIAL_GRADE_SUBJECTS);
 
@@ -78,15 +79,45 @@ const App: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [lastQuizResult, setLastQuizResult] = useState<QuizResult | null>(null);
 
+  // 1. Verileri Buluttan Yükle (Uygulama açılışında)
+  useEffect(() => {
+    const initApp = async () => {
+      const globalData = await loadFromCloud();
+      if (globalData) {
+        if (globalData.units) setUnitsData(globalData.units);
+        if (globalData.siteSettings) setSiteSettings(globalData.siteSettings);
+        if (globalData.mascots) setMascots(globalData.mascots);
+        if (globalData.subjectConfig) setSubjectConfig(globalData.subjectConfig);
+        if (globalData.gradeSubjectsMapping) setGradeSubjectsMapping(globalData.gradeSubjectsMapping);
+      }
+    };
+    initApp();
+  }, []);
+
+  // 2. Global Kaydetme Fonksiyonu
+  const handleGlobalSync = async (overrides?: Partial<GlobalState>) => {
+    setIsSyncing(true);
+    const stateToSave: GlobalState = {
+      units: overrides?.units || unitsData,
+      siteSettings: overrides?.siteSettings || siteSettings,
+      mascots: overrides?.mascots || mascots,
+      subjectConfig: overrides?.subjectConfig || subjectConfig,
+      gradeSubjectsMapping: overrides?.gradeSubjectsMapping || gradeSubjectsMapping
+    };
+    
+    const success = await saveToCloud(stateToSave);
+    if (success) {
+      console.log("Global senkronizasyon başarılı.");
+    }
+    setIsSyncing(false);
+  };
+
   const isAdmin = currentUser.role === 'admin' && isAdminAuthenticated;
-  const isStudent = currentUser.id !== 'guest' && !isAdmin;
   const isGuest = currentUser.id === 'guest';
 
-  // Dinamik İstatistik Hesaplama
   const statsData = useMemo(() => {
     const allUnits = Object.values(unitsData).flat() as Unit[];
     const allTopics = allUnits.flatMap(u => u.topics);
-
     return {
       totalLessons: allTopics.length,
       totalPresentations: allTopics.reduce((acc, t) => acc + (t.presentationSteps?.length || 0), 0),
@@ -114,13 +145,7 @@ const App: React.FC = () => {
 
   const handleStudentLogin = () => {
     if (loginInput.user === 'ogrenci' && loginInput.pass === '123') {
-       setCurrentUser({
-         ...GUEST_USER,
-         id: 'stud-demo',
-         name: 'Demo Öğrenci',
-         username: 'ogrenci',
-         grade: 1
-       });
+       setCurrentUser({ ...GUEST_USER, id: 'stud-demo', name: 'Demo Öğrenci', username: 'ogrenci', grade: 1 });
        setShowStudentLogin(false);
        alert("Hoş geldin! 🚀");
     } else {
@@ -133,21 +158,8 @@ const App: React.FC = () => {
       alert(`Sadece atandığın ${currentUser.grade}. Sınıf alanına erişebilirsin.`);
       return;
     }
-    if (currentUser.status === 'suspended') {
-      alert("Hesabın askıya alınmış. Lütfen yönetici ile iletişime geç.");
-      return;
-    }
     setSelectedGrade(g);
     setView(g === 'SC' ? 'units' : 'subjects');
-  };
-
-  const handleTopicSelect = (topic: Topic) => {
-    if (isGuest && (selectedGrade === 2 || selectedGrade === 3 || selectedGrade === 4 || selectedGrade === 'SC')) {
-      alert("Bu dersin içeriğine erişmek için lütfen giriş yapın veya üye olun. ✨");
-      return;
-    }
-    setSelectedTopic(topic);
-    setView('workspace');
   };
 
   return (
@@ -160,6 +172,12 @@ const App: React.FC = () => {
       isGuest={isGuest}
       currentGrade={selectedGrade}
     >
+      {isSyncing && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[300] bg-indigo-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase shadow-2xl animate-pulse">
+           <i className="fas fa-cloud-upload-alt mr-2"></i> Bulutla Senkronize Ediliyor...
+        </div>
+      )}
+
       {showAdminLogin && (
         <div className="fixed inset-0 z-[200] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="bg-white p-10 rounded-[3rem] max-w-md w-full shadow-2xl animate-bounceIn">
@@ -181,46 +199,22 @@ const App: React.FC = () => {
                    <i className="fas fa-rocket text-3xl"></i>
                 </div>
                 <h3 className="text-3xl font-black uppercase tracking-tighter">MACERAYA BAŞLA!</h3>
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2">Kullanıcı Bilgilerinle Giriş Yap</p>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2">Giriş Yap</p>
              </div>
-             
              <div className="space-y-4">
-                <input 
-                  type="text" 
-                  className="w-full bg-slate-50 p-5 rounded-2xl border-2 outline-none focus:border-indigo-600 font-bold" 
-                  placeholder="Kullanıcı Adı"
-                  value={loginInput.user}
-                  onChange={e => setLoginInput({...loginInput, user: e.target.value})}
-                />
-                <input 
-                  type="password" 
-                  className="w-full bg-slate-50 p-5 rounded-2xl border-2 outline-none focus:border-indigo-600 font-bold" 
-                  placeholder="Şifre"
-                  value={loginInput.pass}
-                  onChange={e => setLoginInput({...loginInput, pass: e.target.value})}
-                  onKeyDown={e => e.key === 'Enter' && handleStudentLogin()}
-                />
+                <input type="text" className="w-full bg-slate-50 p-5 rounded-2xl border-2 outline-none focus:border-indigo-600 font-bold" placeholder="Kullanıcı Adı" value={loginInput.user} onChange={e => setLoginInput({...loginInput, user: e.target.value})} />
+                <input type="password" className="w-full bg-slate-50 p-5 rounded-2xl border-2 outline-none focus:border-indigo-600 font-bold" placeholder="Şifre" value={loginInput.pass} onChange={e => setLoginInput({...loginInput, pass: e.target.value})} onKeyDown={e => e.key === 'Enter' && handleStudentLogin()} />
              </div>
-
              <div className="mt-8 space-y-3">
-                <button onClick={handleStudentLogin} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all">Giriş Yap 🚀</button>
-                <button onClick={() => setShowStudentLogin(false)} className="w-full py-3 font-black text-slate-400 uppercase text-[10px] tracking-widest">Geri Dön</button>
+                <button onClick={handleStudentLogin} className="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl">Giriş Yap 🚀</button>
+                <button onClick={() => setShowStudentLogin(false)} className="w-full py-3 font-black text-slate-400 uppercase text-[10px]">Geri Dön</button>
              </div>
           </div>
         </div>
       )}
 
       {view === 'landing' && (
-        <LandingPage 
-          stats={statsData} 
-          onGradeSelect={handleGradeSelect}
-          onLibraryClick={() => setView('library')}
-          onMusicClick={() => setView('music-room')}
-          onLoginClick={() => setShowStudentLogin(true)}
-          currentUser={currentUser}
-          isAdmin={isAdmin}
-          isGuest={isGuest}
-        />
+        <LandingPage stats={statsData} onGradeSelect={handleGradeSelect} onLibraryClick={() => setView('library')} onMusicClick={() => setView('music-room')} onLoginClick={() => setShowStudentLogin(true)} currentUser={currentUser} isAdmin={isAdmin} isGuest={isGuest} />
       )}
 
       {view === 'subjects' && selectedGrade && (
@@ -228,26 +222,18 @@ const App: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
             <div className="text-center md:text-left">
               <h2 className="text-5xl font-black uppercase tracking-tighter text-slate-900 leading-none mb-2">{selectedGrade}. Sınıf Branşları</h2>
-              <p className="text-slate-400 font-bold uppercase text-xs tracking-[0.2em]">Öğrenmek istediğin dersi seç ve maceraya başla!</p>
+              <p className="text-slate-400 font-bold uppercase text-xs tracking-[0.2em]">Dersini seç ve maceraya başla!</p>
             </div>
-            <button 
-              onClick={() => setView('landing')} 
-              className="group flex items-center gap-3 bg-white px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-xl border-b-4 border-slate-100 hover:bg-slate-900 hover:text-white hover:border-black transition-all"
-            >
+            <button onClick={() => setView('landing')} className="group flex items-center gap-3 bg-white px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-xl border-b-4 border-slate-100 hover:bg-slate-900 hover:text-white transition-all">
               <i className="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Ana Sayfaya Dön
             </button>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {gradeSubjectsMapping[selectedGrade].map(subject => {
               const config = subjectConfig[subject];
               if (!config) return null;
               return (
-                <button 
-                  key={subject} 
-                  onClick={() => { setSelectedSubject(subject); setView('units'); }} 
-                  className="group relative bg-white rounded-[4rem] shadow-2xl overflow-hidden transition-all hover:-translate-y-4 hover:shadow-indigo-200/50 flex flex-col items-start text-left h-[450px]"
-                >
+                <button key={subject} onClick={() => { setSelectedSubject(subject); setView('units'); }} className="group relative bg-white rounded-[4rem] shadow-2xl overflow-hidden transition-all hover:-translate-y-4 flex flex-col items-start text-left h-[450px]">
                   <div className="relative w-full h-[60%] overflow-hidden">
                     <img src={config.coverImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={subject} />
                     <div className={`absolute inset-0 bg-gradient-to-t ${config.gradient} opacity-30 group-hover:opacity-10 transition-opacity`}></div>
@@ -295,12 +281,7 @@ const App: React.FC = () => {
                    <h4 className="text-xl font-black mb-6 uppercase border-b-4 border-slate-50 pb-4" style={{ color: subjectConfig[selectedSubject].color }}>{unit.title}</h4>
                    <div className="space-y-3">
                       {unit.topics.map((topic) => (
-                        <button 
-                          key={topic.id} 
-                          onClick={() => handleTopicSelect(topic)} 
-                          className="w-full text-left bg-slate-50 p-5 rounded-2xl font-bold hover:text-white transition-all shadow-sm flex items-center justify-between group"
-                          style={{'--hover-bg': subjectConfig[selectedSubject].color} as any}
-                        >
+                        <button key={topic.id} onClick={() => { setSelectedTopic(topic); setView('workspace'); }} className="w-full text-left bg-slate-50 p-5 rounded-2xl font-bold hover:text-white transition-all shadow-sm flex items-center justify-between group" style={{'--hover-bg': subjectConfig[selectedSubject].color} as any}>
                           <span className="flex-1 group-hover:translate-x-1 transition-transform">{topic.title}</span>
                           <i className="fas fa-play-circle opacity-0 group-hover:opacity-100 transition-opacity"></i>
                         </button>
@@ -355,7 +336,7 @@ const App: React.FC = () => {
         <AdminSubjectManagement 
           subjectConfig={subjectConfig}
           gradeSubjects={gradeSubjectsMapping}
-          onSave={(conf, map) => { setSubjectConfig(conf); setGradeSubjectsMapping(map); }}
+          onSave={(conf, map) => { setSubjectConfig(conf); setGradeSubjectsMapping(map); handleGlobalSync({subjectConfig: conf, gradeSubjectsMapping: map}); }}
           onClose={() => setView('admin-dashboard')}
         />
       )}
@@ -397,27 +378,21 @@ const App: React.FC = () => {
           units={currentUnits} 
           grade={selectedGrade!} 
           subject={selectedSubject!} 
-          onSaveUnits={u => setUnitsData({...unitsData, [`${selectedGrade}-${selectedSubject}`]: u})} 
+          onSaveUnits={u => { const newData = {...unitsData, [`${selectedGrade}-${selectedSubject}`]: u}; setUnitsData(newData); handleGlobalSync({units: newData}); }} 
           onBack={() => setView('units')} 
         />
       )}
 
       {view === 'admin-users' && isAdmin && (
-        <AdminUserManagement 
-          users={users} 
-          onAddUser={u => setUsers([...users, u])} 
-          onUpdateUser={setUsers}
-          onDeleteUser={id => setUsers(users.filter(u => u.id !== id))} 
-          onClose={() => setView('admin-dashboard')} 
-        />
+        <AdminUserManagement users={users} onAddUser={u => setUsers([...users, u])} onUpdateUser={setUsers} onDeleteUser={id => setUsers(users.filter(u => u.id !== id))} onClose={() => setView('admin-dashboard')} />
       )}
 
       {view === 'admin-mascots' && isAdmin && (
-        <AdminMascotManagement mascots={mascots} onSave={setMascots} onClose={() => setView('admin-dashboard')} />
+        <AdminMascotManagement mascots={mascots} onSave={m => { setMascots(m); handleGlobalSync({mascots: m}); }} onClose={() => setView('admin-dashboard')} />
       )}
 
       {view === 'admin-site' && isAdmin && (
-        <AdminSiteSettings settings={siteSettings} onSave={setSiteSettings} onClose={() => setView('admin-dashboard')} />
+        <AdminSiteSettings settings={siteSettings} onSave={s => { setSiteSettings(s); handleGlobalSync({siteSettings: s}); }} onClose={() => setView('admin-dashboard')} />
       )}
 
       {view === 'admin-library' && isAdmin && (
@@ -429,14 +404,7 @@ const App: React.FC = () => {
       )}
 
       {view === 'workspace' && selectedTopic && (
-        <TopicWorkspace 
-          topic={selectedTopic} 
-          grade={selectedGrade!} 
-          subject={selectedSubject!} 
-          mascots={mascots} 
-          onBack={() => setView('units')} 
-          onComplete={(res) => { setLastQuizResult(res); setView('ai-advisor'); }} 
-        />
+        <TopicWorkspace topic={selectedTopic} grade={selectedGrade!} subject={selectedSubject!} mascots={mascots} onBack={() => setView('units')} onComplete={(res) => { setLastQuizResult(res); setView('ai-advisor'); }} />
       )}
 
       {view === 'ai-advisor' && lastQuizResult && (

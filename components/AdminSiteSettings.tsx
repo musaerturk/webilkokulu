@@ -16,7 +16,7 @@ const AdminSiteSettings: React.FC<AdminSiteSettingsProps> = ({ settings: initial
 
   const handleSave = () => {
     onSave(settings);
-    alert("Site ayarları başarıyla kaydedildi! ✨");
+    alert("Site ayarları başarıyla kaydedildi! ✨\nNot: Firebase ayarlarını girdiyseniz verileriniz artık tüm cihazlarda senkronize edilecektir.");
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +35,7 @@ const AdminSiteSettings: React.FC<AdminSiteSettingsProps> = ({ settings: initial
   const handleAddFAQ = () => {
     setSettings({
       ...settings,
-      faq: [...settings.faq, { question: '', answer: '' }]
+      faq: [...settings.faq, { id: Date.now().toString(), question: '', answer: '' }]
     });
   };
 
@@ -68,7 +68,7 @@ const AdminSiteSettings: React.FC<AdminSiteSettingsProps> = ({ settings: initial
          <button onClick={() => setActiveTab('branding')} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all min-w-[120px] ${activeTab === 'branding' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400'}`}>MARKA & GÖRÜNÜM</button>
          <button onClick={() => setActiveTab('corporate')} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all min-w-[120px] ${activeTab === 'corporate' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400'}`}>KURUMSAL SAYFALAR</button>
          <button onClick={() => setActiveTab('faq')} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all min-w-[120px] ${activeTab === 'faq' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400'}`}>SSS YÖNETİMİ</button>
-         <button onClick={() => setActiveTab('storage')} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all min-w-[120px] ${activeTab === 'storage' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400'}`}>BULUT DEPOLAMA</button>
+         <button onClick={() => setActiveTab('storage')} className={`flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all min-w-[120px] ${activeTab === 'storage' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400'}`}>BULUT VERİTABANI</button>
       </div>
 
       <div className="bg-white p-10 rounded-[4rem] shadow-2xl border-4 border-slate-50 space-y-12 min-h-[600px]">
@@ -159,37 +159,37 @@ const AdminSiteSettings: React.FC<AdminSiteSettingsProps> = ({ settings: initial
 
          {activeTab === 'storage' && (
            <div className="space-y-8 animate-fadeIn">
-              <section className="bg-indigo-50 p-8 rounded-[3rem] border-2 border-indigo-100">
-                 <h3 className="text-xl font-black text-indigo-900 uppercase mb-4">Bulut Depolama (Firebase) Entegrasyonu</h3>
-                 <p className="text-indigo-600 text-xs font-bold mb-6">Görselleri ve videoları Firebase Storage üzerinde saklamak için yapılandırma bilgilerini girin. Boş bırakırsanız sistem Base64 (Yerel Bellek) kullanmaya devam eder.</p>
+              <section className="bg-indigo-50 p-8 rounded-[3rem] border-4 border-indigo-100">
+                 <h3 className="text-2xl font-black text-indigo-900 uppercase mb-4">Gerçek Zamanlı Veritabanı (Senkronizasyon)</h3>
+                 <p className="text-indigo-600 text-sm font-bold mb-8">
+                    Verilerinizin (Üniteler, Ayarlar, Rozetler) her tarayıcıda aynı görünmesi için Firebase Realtime Database kullanmalısınız. 
+                    <br/><br/>
+                    1. <a href="https://console.firebase.google.com/" target="_blank" className="underline font-black">Firebase Console</a> üzerinden bir proje açın.
+                    <br/>
+                    2. "Realtime Database" oluşturun ve kuralları "public" yapın.
+                    <br/>
+                    3. Aşağıdaki bilgileri doldurup "Kaydet" deyin.
+                 </p>
                  
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Provider</label>
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Veri Sağlayıcı</label>
                        <select 
-                        className="w-full bg-white p-4 rounded-xl font-black uppercase text-xs outline-none border-2 border-transparent focus:border-indigo-600"
+                        className="w-full bg-white p-5 rounded-2xl font-black uppercase text-xs outline-none border-2 border-transparent focus:border-indigo-600 shadow-sm"
                         value={settings.storageConfig.provider}
                         onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, provider: e.target.value as any}})}
                        >
-                          <option value="none">Devre Dışı (Yerel Bellek)</option>
-                          <option value="firebase">Firebase Storage</option>
+                          <option value="none">Devre Dışı (Sadece bu bilgisayara kaydeder)</option>
+                          <option value="firebase">Firebase (Tüm cihazlarda senkronize eder)</option>
                        </select>
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">API Key</label>
-                       <input className="w-full bg-white p-4 rounded-xl font-bold text-sm" value={settings.storageConfig.apiKey || ''} onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, apiKey: e.target.value}})} />
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Firebase Project ID</label>
+                       <input className="w-full bg-white p-5 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-indigo-600 shadow-sm" value={settings.storageConfig.projectId || ''} onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, projectId: e.target.value}})} placeholder="Örn: webilkokulu-99abc" />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Project ID</label>
-                       <input className="w-full bg-white p-4 rounded-xl font-bold text-sm" value={settings.storageConfig.projectId || ''} onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, projectId: e.target.value}})} />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Storage Bucket</label>
-                       <input className="w-full bg-white p-4 rounded-xl font-bold text-sm" value={settings.storageConfig.storageBucket || ''} onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, storageBucket: e.target.value}})} />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">App ID</label>
-                       <input className="w-full bg-white p-4 rounded-xl font-bold text-sm" value={settings.storageConfig.appId || ''} onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, appId: e.target.value}})} />
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Firebase Web API Key</label>
+                       <input type="password" className="w-full bg-white p-5 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-indigo-600 shadow-sm" value={settings.storageConfig.apiKey || ''} onChange={e => setSettings({...settings, storageConfig: {...settings.storageConfig, apiKey: e.target.value}})} placeholder="AIzaSy..." />
                     </div>
                  </div>
               </section>
@@ -198,7 +198,7 @@ const AdminSiteSettings: React.FC<AdminSiteSettingsProps> = ({ settings: initial
 
          <div className="pt-10 border-t">
             <button onClick={handleSave} className="w-full bg-indigo-600 text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest shadow-2xl hover:bg-indigo-700 transition-all">
-               TÜM AYARLARI KAYDET 🚀
+               YAPILANDIRMAYI TAMAMLA VE KAYDET 🚀
             </button>
          </div>
       </div>
