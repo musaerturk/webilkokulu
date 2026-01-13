@@ -47,6 +47,7 @@ export interface CloudStorageConfig {
   provider: 'none' | 'firebase';
   apiKey?: string;
   projectId?: string;
+  databaseUrl?: string; // Avrupa sunucuları için eklendi
   storageBucket?: string;
   appId?: string;
 }
