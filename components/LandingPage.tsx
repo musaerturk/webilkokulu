@@ -16,10 +16,11 @@ interface LandingPageProps {
   onGradeSelect: (grade: Grade) => void;
   onLibraryClick: () => void;
   onMusicClick: () => void;
+  onLoginClick: () => void;
   isAdmin: boolean;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, onGradeSelect, onLibraryClick, onMusicClick, isAdmin }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, onGradeSelect, onLibraryClick, onMusicClick, onLoginClick, isAdmin }) => {
   const getWelcomeMessage = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Günaydın Küçük Kaşif!";
@@ -27,7 +28,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
     return "İyi Akşamlar Geleceğin Yıldızı!";
   };
 
-  const renderGradeCard = (grade: Grade, isFullWidth: boolean = false) => {
+  const renderGradeCard = (grade: Grade) => {
+    if (grade === 'SC') return null;
+
     const isLocked = !isAdmin && !isGuest && grade !== currentUser.grade;
 
     return (
@@ -35,7 +38,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
         key={grade}
         disabled={isLocked}
         onClick={() => onGradeSelect(grade)}
-        className={`group bg-white p-6 rounded-[3.5rem] shadow-2xl transition-all duration-300 active:scale-95 flex flex-col items-center border-b-[10px] ${isLocked ? 'opacity-40 grayscale cursor-not-allowed border-gray-200' : 'hover:-translate-y-4 border-blue-100 hover:border-blue-600'} ${isFullWidth ? 'w-full md:w-80' : 'w-full'}`}
+        className={`group bg-white p-6 rounded-[3.5rem] shadow-2xl transition-all duration-300 active:scale-95 flex flex-col items-center border-b-[10px] ${isLocked ? 'opacity-40 grayscale cursor-not-allowed border-gray-200' : 'hover:-translate-y-4 border-blue-100 hover:border-blue-600'} w-full`}
       >
         <div className="relative">
           <GradeSymbol grade={grade} size="md" className="mb-4 transform group-hover:scale-110 transition-transform" />
@@ -46,7 +49,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
           )}
         </div>
         <span className="text-slate-800 font-black text-sm uppercase tracking-tighter">
-          {grade === 'SC' ? 'Sesten Cümleye Dünyası' : `${grade}. SINIF`}
+          {`${grade}. SINIF`}
         </span>
         {isLocked && <span className="text-[8px] font-bold text-gray-400 uppercase mt-1 tracking-widest">Senin Kursun Değil</span>}
       </button>
@@ -58,6 +61,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
       {/* 1. HERO SECTION */}
       <section className="relative">
         <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-emerald-400 rounded-[5rem] p-12 md:p-20 text-white shadow-2xl relative overflow-hidden">
+          
+          {/* SAĞ ÜST GİRİŞ BUTONU */}
+          {isGuest && (
+            <button 
+              onClick={onLoginClick}
+              className="absolute top-8 right-8 md:top-12 md:right-12 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-md px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/30 transition-all active:scale-95 flex items-center gap-2 group"
+            >
+              <i className="fas fa-user-circle text-lg group-hover:rotate-12 transition-transform"></i>
+              Giriş Yap
+            </button>
+          )}
+
           <div className="relative z-10 flex flex-col lg:flex-row items-center gap-16">
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1">
               <div className="inline-block bg-white/20 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 backdrop-blur-md">
@@ -68,7 +83,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
               </h1>
               <p className="text-xl md:text-2xl font-medium text-blue-50/90 italic max-w-2xl mb-12">
                 {isGuest 
-                  ? "Uygulamadaki tüm üniteleri ve ders içeriklerini önizleyebilirsin. Dersleri başlatmak için aramıza katıl!" 
+                  ? "Tüm sınıfları ve müfredatı inceleyebilirsin. Dersleri başlatmak için aramıza katıl!" 
                   : `Bugün senin için hazırladığımız ${currentUser.grade}. Sınıf maceralarına atılmaya ne dersin?`}
               </p>
               
@@ -79,24 +94,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
                  <button onClick={onMusicClick} className="bg-pink-500 text-white px-10 py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 transition-all border-b-4 border-pink-700">
                    🎵 Notalı Bahçe
                  </button>
-                 <a href="#kesfet" className="bg-white/10 text-white px-10 py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all">
-                   Neler Var? <i className="fas fa-chevron-down ml-2"></i>
-                 </a>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 w-full lg:w-auto">
-               <div className="grid grid-cols-2 gap-4">
-                  {renderGradeCard(1)}
-                  {renderGradeCard(2)}
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                  {renderGradeCard(3)}
-                  {renderGradeCard(4)}
-               </div>
-               <div className="flex justify-center">
-                  {renderGradeCard('SC', true)}
-               </div>
+            {/* Sadece 1-4. Sınıf Kartları */}
+            <div className="grid grid-cols-2 gap-4 w-full lg:w-96">
+               {[1, 2, 3, 4].map(g => renderGradeCard(g as Grade))}
             </div>
           </div>
           <div className="absolute top-10 left-10 opacity-20"><Mascot type="rabbit" size="xl" className="rotate-12" /></div>
@@ -144,7 +147,71 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
          </div>
       </section>
 
-      {/* 3. STATS SECTION */}
+      {/* 3. SESTEN CÜMLEYE - ÖZEL TANITIM BLOĞU */}
+      <section className="max-w-7xl mx-auto px-6">
+         <div 
+           onClick={() => onGradeSelect('SC')}
+           className="bg-white rounded-[5rem] overflow-hidden shadow-2xl border-4 border-fuchsia-100 flex flex-col lg:flex-row cursor-pointer group hover:border-fuchsia-400 transition-all duration-500"
+         >
+            <div className="bg-fuchsia-500 p-12 lg:w-1/3 flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-fuchsia-600 transition-colors">
+               <GradeSymbol grade="SC" size="lg" className="mb-6 relative z-10" />
+               <div className="text-white text-center relative z-10">
+                  <h3 className="text-3xl font-black uppercase tracking-tighter">SES DÜNYASI</h3>
+                  <p className="text-fuchsia-200 font-bold text-xs uppercase tracking-widest mt-2">Okuma Yazmaya İlk Adım</p>
+               </div>
+               <div className="absolute -bottom-10 -left-10 opacity-10 rotate-12 group-hover:scale-110 transition-transform">
+                  <Mascot type="owl" size="xl" />
+               </div>
+            </div>
+
+            <div className="p-12 lg:w-2/3 flex flex-col justify-center space-y-6 relative">
+               <div className="flex items-center gap-3">
+                  <span className="bg-fuchsia-100 text-fuchsia-600 px-4 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">YENİ MÜFREDAT UYUMLU</span>
+                  <div className="h-1 flex-1 bg-fuchsia-50 rounded-full"></div>
+               </div>
+               
+               <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
+                  SESTEN CÜMLEYE: <br/> 
+                  <span className="text-fuchsia-600">ANLAYARAK OKUMA</span> SİSTEMİ
+               </h2>
+
+               <p className="text-xl text-slate-500 font-medium leading-relaxed italic">
+                  "Harfler sadece birer çizgi değildir; onlar birer ses, birer duygu ve birer hikayedir. 
+                  Yaratıcı metinlerimiz ve etkileşimli oyunlarımızla çocuğunuz okumayı ezberleyerek değil, 
+                  <span className="text-slate-800 font-black not-italic"> neşeyle keşfederek ve anlayarak öğrenecek!</span>"
+               </p>
+
+               <div className="flex flex-wrap gap-6 pt-4">
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
+                        <i className="fas fa-magic"></i>
+                     </div>
+                     <span className="font-black text-xs text-slate-600 uppercase">Etkileşimli Hikayeler</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+                        <i className="fas fa-brain"></i>
+                     </div>
+                     <span className="font-black text-xs text-slate-600 uppercase">Yaratıcı Kavrama</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shadow-sm">
+                        <i className="fas fa-smile-beam"></i>
+                     </div>
+                     <span className="font-black text-xs text-slate-600 uppercase">Eğlenceli Süreç</span>
+                  </div>
+               </div>
+
+               <div className="pt-6">
+                  <button className="bg-slate-900 text-white px-10 py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest shadow-xl group-hover:bg-fuchsia-600 group-hover:scale-105 transition-all">
+                     Okumayı Keşfet <i className="fas fa-arrow-right ml-3 animate-bounce-x"></i>
+                  </button>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* 4. STATS SECTION */}
       <section className="bg-slate-900 rounded-[6rem] p-16 md:p-24 text-white relative overflow-hidden mx-4">
          <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
             <div className="space-y-4">
@@ -169,16 +236,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, 
             </div>
          </div>
          <div className="absolute right-[-10%] bottom-[-10%] opacity-10"><Mascot type="owl" size="xl" /></div>
-      </section>
-
-      {/* 4. FOOTER CTA */}
-      <section className="text-center py-20 bg-white rounded-[5rem] border-8 border-blue-50 shadow-2xl mx-6">
-         <Mascot type="fox" size="lg" className="mx-auto mb-8 animate-slowPulse" />
-         <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase mb-6">Maceraya Katılmaya Hazır mısın?</h2>
-         <p className="text-xl text-slate-500 font-medium mb-12 max-w-2xl mx-auto px-6">Binlerce kaşif burada öğreniyor. Sen de sınıfını seç ve hemen başla!</p>
-         <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="bg-blue-600 text-white px-16 py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-lg shadow-2xl hover:bg-blue-700 transition-all hover:scale-105 active:scale-95">
-           BAŞLIYORUZ! <i className="fas fa-rocket ml-3"></i>
-         </button>
       </section>
     </div>
   );

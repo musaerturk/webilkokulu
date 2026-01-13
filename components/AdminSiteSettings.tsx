@@ -100,8 +100,14 @@ const AdminSiteSettings: React.FC<AdminSiteSettingsProps> = ({ settings: initial
               <section className="space-y-6 pt-10 border-t">
                  <h3 className="text-xl font-black text-slate-800 uppercase mb-6">İletişim & Sosyal Medya</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <input className="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent focus:border-indigo-100" placeholder="E-Posta" value={settings.contactEmail} onChange={e => setSettings({...settings, contactEmail: e.target.value})} />
-                    <input className="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent focus:border-indigo-100" placeholder="Telefon" value={settings.contactPhone} onChange={e => setSettings({...settings, contactPhone: e.target.value})} />
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-4">E-Posta Adresi</label>
+                       <input className="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent focus:border-indigo-100" placeholder="E-Posta" value={settings.contactEmail} onChange={e => setSettings({...settings, contactEmail: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-tighter">Telefon / WhatsApp (905... şeklinde)</label>
+                       <input className="w-full bg-slate-50 p-4 rounded-xl font-bold border-2 border-transparent focus:border-indigo-100" placeholder="Örn: 905321234567" value={settings.contactPhone} onChange={e => setSettings({...settings, contactPhone: e.target.value})} />
+                    </div>
                  </div>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <input className="w-full bg-slate-50 p-4 rounded-xl font-bold" placeholder="Instagram URL" value={settings.socialMedia.instagram} onChange={e => setSettings({...settings, socialMedia: {...settings.socialMedia, instagram: e.target.value}})} />

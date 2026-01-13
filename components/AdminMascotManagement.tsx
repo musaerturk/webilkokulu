@@ -19,20 +19,24 @@ const AdminMascotManagement: React.FC<AdminMascotManagementProps> = ({ mascots, 
     return saved ? JSON.parse(saved) : {};
   };
 
+  // Fixed missing 'calculator' property in roleLabels
   const roleLabels: Record<MascotRole, string> = {
     presentation: 'Sunum Sorumlusu',
     game: 'Oyun Laboratuvarı',
     assessment: 'Soru & Ölçme',
     coach: 'Öğrenci Koçu',
-    wisdom: 'Analiz & Bilgelik'
+    wisdom: 'Analiz & Bilgelik',
+    calculator: 'Hesap Makinesi'
   };
 
+  // Fixed missing 'calculator' property in roleColors
   const roleColors: Record<MascotRole, string> = {
     presentation: 'border-blue-500 bg-blue-50',
     game: 'border-purple-500 bg-purple-50',
     assessment: 'border-orange-500 bg-orange-50',
     coach: 'border-red-500 bg-red-50',
-    wisdom: 'border-indigo-500 bg-indigo-50'
+    wisdom: 'border-indigo-500 bg-indigo-50',
+    calculator: 'border-yellow-500 bg-yellow-50'
   };
 
   const handleUpdate = (role: MascotRole, updates: Partial<MascotSettings>) => {

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Grade, Subject, Unit, Book } from './types';
+import { Grade, Subject, Unit, Book, SubjectStyle } from './types';
 
 export const BRAND_PALETTE = {
   grades: {
@@ -25,6 +25,65 @@ export const BRAND_PALETTE = {
   }
 };
 
+export const INITIAL_SUBJECT_CONFIG: Record<Subject, SubjectStyle> = {
+  'Türkçe': {
+    color: '#0ea5e9',
+    icon: 'fa-book-open-reader',
+    gradient: 'from-sky-400 to-blue-600',
+    coverImage: 'https://images.unsplash.com/photo-1544411047-c491584222f0?q=80&w=800&auto=format&fit=crop'
+  },
+  'Matematik': {
+    color: '#ef4444',
+    icon: 'fa-calculator',
+    gradient: 'from-red-400 to-rose-600',
+    coverImage: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=800&auto=format&fit=crop'
+  },
+  'Hayat Bilgisi': {
+    color: '#10b981',
+    icon: 'fa-leaf',
+    gradient: 'from-emerald-400 to-green-600',
+    coverImage: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=800&auto=format&fit=crop'
+  },
+  'Fen Bilimleri': {
+    color: '#f59e0b',
+    icon: 'fa-flask-vial',
+    gradient: 'from-amber-400 to-orange-600',
+    coverImage: 'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=800&auto=format&fit=crop'
+  },
+  'Sosyal Bilgiler': {
+    color: '#4f46e5',
+    icon: 'fa-earth-europe',
+    gradient: 'from-indigo-400 to-blue-800',
+    coverImage: 'https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=800&auto=format&fit=crop'
+  },
+  'İngilizce': {
+    color: '#8b5cf6',
+    icon: 'fa-language',
+    gradient: 'from-violet-400 to-purple-700',
+    coverImage: 'https://images.unsplash.com/photo-1543167653-412760f38b2b?q=80&w=800&auto=format&fit=crop'
+  },
+  'Okuma Yazma': {
+    color: '#d946ef',
+    icon: 'fa-pencil-alt',
+    gradient: 'from-fuchsia-400 to-pink-600',
+    coverImage: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=800&auto=format&fit=crop'
+  },
+  'Sesten Cümleye': {
+    color: '#f43f5e',
+    icon: 'fa-volume-up',
+    gradient: 'from-rose-400 to-fuchsia-600',
+    coverImage: 'https://images.unsplash.com/photo-1485546246426-74dc38c3f501?q=80&w=800&auto=format&fit=crop'
+  }
+};
+
+export const INITIAL_GRADE_SUBJECTS: Record<Grade, Subject[]> = {
+  1: ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'Okuma Yazma'],
+  2: ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'İngilizce'],
+  3: ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'İngilizce', 'Fen Bilimleri'],
+  4: ['Türkçe', 'Matematik', 'Sosyal Bilgiler', 'İngilizce', 'Fen Bilimleri'],
+  'SC': ['Sesten Cümleye']
+};
+
 export const MOCK_BOOKS: Book[] = [
   {
     id: 'B1',
@@ -41,40 +100,32 @@ export const MOCK_BOOKS: Book[] = [
   }
 ];
 
-export const GRADE_SUBJECTS: Record<Grade, Subject[]> = {
-  1: ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'Okuma Yazma'],
-  2: ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'İngilizce'],
-  3: ['Türkçe', 'Matematik', 'Hayat Bilgisi', 'İngilizce', 'Fen Bilimleri'],
-  4: ['Türkçe', 'Matematik', 'Sosyal Bilgiler', 'İngilizce', 'Fen Bilimleri'],
-  'SC': ['Sesten Cümleye']
-};
-
-export const SUBJECT_ICONS: Record<Subject, React.ReactNode> = {
-  'Türkçe': <i className="fas fa-book text-blue-500"></i>,
-  'Matematik': <i className="fas fa-calculator text-red-500"></i>,
-  'Hayat Bilgisi': <i className="fas fa-leaf text-green-500"></i>,
-  'İngilizce': <i className="fas fa-language text-purple-500"></i>,
-  'Fen Bilimleri': <i className="fas fa-flask text-orange-500"></i>,
-  'Sosyal Bilgiler': <i className="fas fa-globe text-indigo-500"></i>,
-  'Okuma Yazma': <i className="fas fa-pencil-alt text-pink-500"></i>,
-  'Sesten Cümleye': <i className="fas fa-volume-up text-fuchsia-500"></i>
-};
+const createMockAssessment = (id: string, title: string): any => ({
+  id,
+  title,
+  type: 'multiple-choice',
+  questions: [
+    { id: `q-${id}-1`, text: "Konuyla ilgili temel bir soru?", options: ["A Şıkkı", "B Şıkkı", "C Şıkkı"], correctAnswer: 0, topic: title }
+  ]
+});
 
 export const MOCK_UNITS: Record<string, Unit[]> = {
+  '1-Türkçe': [{ id: 'TR1', title: 'Ünite 1: Okuma Sevinci', topics: [{ id: 'TR1T1', title: 'Harfleri Tanıyalım', presentationSteps: [], activities: [], assessment: createMockAssessment('tr1t1a', 'Harf Testi') }] }],
+  '1-Matematik': [{ id: 'MAT1', title: 'Ünite 1: Uzamsal İlişkiler', topics: [{ id: 'MAT1T1', title: 'Altında - Üstünde', presentationSteps: [], activities: [], assessment: createMockAssessment('mat1t1a', 'Konum Testi') }] }],
   '2-Matematik': [
     {
       id: 'MAT.2.1',
-      title: 'Ünite 1: SAYILAR VE İŞLEMLER (SAYI AVI)',
+      title: 'Ünite 1: SAYILAR VE İŞLEMLER',
       topics: [
         {
           id: 'MAT.2.1.1',
           title: 'Nesne Sayılarını Belirleyelim',
           presentationSteps: [
-            { id: 's1', title: 'Kaç Tane Var? 🍎', icon: 'fa-apple-whole', color: 'bg-red-500', content: 'Etrafındaki nesneleri saymaya hazır mısın? 100’e kadar olan sayıları artık çok iyi biliyoruz!' },
-            { id: 's2', title: 'Onluk ve Birlik Evi 🏠', icon: 'fa-home', color: 'bg-blue-500', content: 'Sayılar evlerinde gruplanır. 10 tane bir araya gelince kocaman bir Onluk olur!' }
+            { id: 's1', title: 'Kaç Tane Var? 🍎', icon: 'fa-apple-whole', color: 'bg-red-500', content: 'Etrafındaki nesneleri saymaya hazır mısın?' },
+            { id: 's2', title: 'Onluk ve Birlik Evi 🏠', icon: 'fa-home', color: 'bg-blue-500', content: '10 tane bir araya gelince kocaman bir Onluk olur!' }
           ],
           activities: [],
-          assessment: { id: 'quiz-2.1.1', questions: [{ id: 'q1', text: "2 onluk ve 5 birlikten oluşan sayı hangisidir?", options: ["25", "52", "20"], correctAnswer: 0, topic: "Onluk Birlik" }] }
+          assessment: createMockAssessment('quiz-2.1.1', 'Sayı Avı Testi')
         }
       ]
     }
@@ -82,36 +133,21 @@ export const MOCK_UNITS: Record<string, Unit[]> = {
   '3-Fen Bilimleri': [
     {
       id: 'FB.3.1',
-      title: 'Ünite 1: GEZEGENİMİZİ TANIYALIM (BİLİMSEL KEŞİF)',
+      title: 'Ünite 1: GEZEGENİMİZİ TANIYALIM',
       topics: [
         {
           id: 'FB.3.1.1',
           title: 'Dünya’nın Şekli ve Yapısı',
           presentationSteps: [
-            { id: 's1', title: 'Dünya Bir Portakal mı? 🍊', icon: 'fa-earth-americas', color: 'bg-indigo-500', content: 'Dünya’nın şeklinin küreye benzediğini biliyor muydun? Eskiden insanlar Dünya’nın düz olduğuna inanırdı!' },
-            { id: 's2', title: 'Katman Katman Dünya 🌍', icon: 'fa-layer-group', color: 'bg-blue-500', content: 'Dünya’mız tıpkı bir şeftali gibi katmanlardan oluşur: Hava katmanı, su katmanı ve yer kabuğu!' }
+            { id: 's1', title: 'Dünya Bir Portakal mı? 🍊', icon: 'fa-earth-americas', color: 'bg-indigo-500', content: 'Dünya’nın şeklinin küreye benzediğini biliyor muydun?' }
           ],
-          activities: [{
-            id: 'act-3.1.1',
-            type: 'sorting',
-            instruction: "Katmanları dıştan içe sırala!",
-            categories: ["Hava Katmanı", "Su Katmanı", "Kara Katmanı"],
-            items: [
-              { id: 'i1', content: "Atmosfer", targetCategory: "Hava Katmanı" },
-              { id: 'i2', content: "Okyanuslar", targetCategory: "Su Katmanı" },
-              { id: 'i3', content: "Dağlar", targetCategory: "Kara Katmanı" }
-            ]
-          }],
-          assessment: { 
-            id: 'quiz-3.1.1', 
-            questions: [
-              { id: 'q1', text: "Dünya'nın şekli aşağıdakilerin hangisine benzer?", options: ["Küp", "Küre", "Daire"], correctAnswer: 1, topic: "Dünya Şekli" }
-            ]
-          }
+          activities: [],
+          assessment: createMockAssessment('quiz-3.1.1', 'Dünya Yapısı Testi')
         }
       ]
     }
   ],
+  '4-Sosyal Bilgiler': [{ id: 'SB4', title: 'Ünite 1: Herkesin Bir Kimliği Var', topics: [{ id: 'SB4T1', title: 'Resmî Kimlik Belgemiz', presentationSteps: [], activities: [], assessment: createMockAssessment('sb4t1a', 'Kimlik Testi') }] }],
   'SC-Sesten Cümleye': [
     {
       id: 'SC-U1',
@@ -119,8 +155,9 @@ export const MOCK_UNITS: Record<string, Unit[]> = {
       topics: [
         { 
           id: 'SC-A', title: 'A Sesi', 
-          presentationSteps: [{ id: 'sa1', title: 'A Sesi ile Tanışalım', icon: 'fa-font', color: 'bg-pink-500', content: 'Aaaa! Bak ne kadar kolay söyleniyor. Elma derken, Araba derken en başta A sesini duyuyoruz!' }],
-          activities: [], assessment: { id: 'as-a', questions: [] } 
+          presentationSteps: [{ id: 'sa1', title: 'A Sesi ile Tanışalım', icon: 'fa-font', color: 'bg-pink-500', content: 'Aaaa! Bak ne kadar kolay söyleniyor.' }],
+          activities: [], 
+          assessment: createMockAssessment('as-a', 'A Sesi Testi')
         }
       ]
     }
