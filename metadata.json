@@ -1,10 +1,8 @@
 
 {
-  "name": "WEBİLKOKULU - Dijital Eğitim Platformu",
-  "description": "MEB müfredatı uyumlu, Gemini AI destekli, interaktif kütüphane ve müzik odası içeren kapsamlı ilkokul eğitim platformu.",
+  "name": "WEBİLKOKULU",
+  "description": "WEBİLKOKULU - Sana özel okul. MEB uyumlu, AI destekli modern eğitim platformu.",
   "requestFramePermissions": [
-    "camera",
-    "microphone",
-    "geolocation"
+    "camera"
   ]
 }

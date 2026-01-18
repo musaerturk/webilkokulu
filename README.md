@@ -1,20 +1,30 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🚀 WEBİLKOKULU - Sana Özel Okul
 
-# Run and deploy your AI Studio app
+**WEBİLKOKULU**, ilkokul öğrencileri için MEB müfredatıyla %100 uyumlu, yapay zeka (Gemini API) destekli ve oyunlaştırılmış bir modern eğitim platformudur.
 
-This contains everything you need to run your app locally.
+## ✨ Öne Çıkan Özellikler
 
-View your app in AI Studio: https://ai.studio/apps/drive/1qngfFYT437UJA8Hf4awsmvARQ5yRGnUd
+- **🎓 Akıllı Kurs Paneli:** MEB kazanımlarına göre kategorize edilmiş dersler ve üniteler.
+- **🤖 AI İçerik Üretimi:** Tek tıkla konuya özel slaytlar, interaktif oyunlar ve ölçme-değerlendirme soruları üretimi.
+- **📚 AI Kütüphane:** Çocukların ilgi alanlarına göre Gemini tarafından yazılan ve resimlenen masallar.
+- **📅 Kişisel Planlayıcı:** Haftalık ders programı, ödev takibi ve akıllı alarm sistemi.
+- **💬 İnteraktif Öğrenme:** Konu altında AI öğretmen ile sohbet ve topluluk yorumları.
+- **🎵 Müzik Odası:** Eğitici ve dinlendirici ses dosyaları yönetimi.
 
-## Run Locally
+## 🛠️ Teknolojiler
 
-**Prerequisites:**  Node.js
+- **Frontend:** React, Tailwind CSS, TypeScript
+- **Backend:** Firebase Firestore & Storage
+- **AI:** Google Gemini API (@google/genai)
+- **Modern ESM:** Importmaps ile hızlı yükleme
 
+## ⚙️ Kurulum ve Çalıştırma
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Bu proje herhangi bir derleme (build) adımı gerektirmeden, modern tarayıcıların ESM desteğiyle çalışır.
+
+1. Depoyu klonlayın: `git clone https://github.com/kullaniciadi/webilkokulu.git`
+2. Bir web sunucusu (Live Server vb.) ile `index.html` dosyasını açın.
+3. `.env` dosyanıza veya ortam değişkenlerinize `API_KEY` (Gemini) ve `FIREBASE_API_KEY` değerlerini ekleyin.
+
+---
+⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!

@@ -1,228 +1,154 @@
 
-export type Grade = 1 | 2 | 3 | 4 | 'SC';
+export type PanelType = 'HOME' | 'ADMIN' | 'USER' | 'INFO';
+export type InfoPageType = 'ABOUT' | 'CONTACT' | 'CAREER' | 'FAQ' | 'PRIVACY' | 'TERMS';
 
-// Subject artık dinamik olarak genişletilebilir
-export type Subject = string;
-
-// SubjectStyle interface added to fix import errors in App.tsx and AdminSubjectManagement.tsx
-export interface SubjectStyle {
-  color: string;
-  icon: string;
-  coverImage: string;
-  gradient: string;
-}
-
-export interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-export interface Badge {
+export interface Category {
   id: string;
   name: string;
-  icon: string;
-  color: string;
-  date: string;
-  description: string;
-  imageUrl?: string;
+  image: string;
+  subCategories: SubCategory[];
 }
 
-export interface RankDefinition {
+export interface SubCategory {
   id: string;
-  title: string;
-  minPoints: number;
-  imageUrl?: string;
-}
-
-export interface Quest {
-  id: string;
-  title: string;
-  description: string;
-  points: number;
-  isActive: boolean;
-}
-
-export interface CloudStorageConfig {
-  provider: 'none' | 'firebase';
-  apiKey?: string;
-  projectId?: string;
-  databaseUrl?: string; // Avrupa sunucuları için eklendi
-  storageBucket?: string;
-  appId?: string;
-}
-
-export interface SiteSettings {
-  logoUrl: string;
-  slogan: string;
-  footerDescription: string;
-  contactEmail: string;
-  contactPhone: string;
-  aboutUs: string;
-  privacyPolicy: string;
-  termsOfUse: string;
-  faq: FAQItem[];
-  socialMedia: {
-    instagram: string;
-    youtube: string;
-    twitter: string;
-  };
-  storageConfig: CloudStorageConfig;
-}
-
-export type MascotRole = 'presentation' | 'game' | 'assessment' | 'coach' | 'wisdom' | 'calculator';
-export type MascotType = 'turtle' | 'rabbit' | 'fox' | 'cat' | 'owl';
-
-export interface MascotSettings {
-  role: MascotRole;
-  type: MascotType;
   name: string;
-  customImageUrl?: string;
+  image: string;
 }
 
-export interface PresentationStep {
+export interface Course {
   id: string;
-  title: string;
-  content: string;
-  icon: string;
-  color: string;
-  imageUrl?: string;
-  audioUrl?: string;
-  audioScript?: string;
-  videoUrl?: string;
+  categoryId: string;
+  subCategoryId: string;
+  name: string;
+  description: string;
+  image: string;
+  info: string;
 }
 
-export type ActivityType = 'sorting' | 'sequence-collector' | 'animated-adventure';
-
-export interface ActivityItem {
+export interface Section {
   id: string;
-  content: string;
-  targetCategory?: string;
-  isCorrect?: boolean;
-  order?: number;
-  imageUrl?: string;
+  courseId: string;
+  name: string;
+  order: number;
 }
 
-export interface Activity {
-  id: string;
-  type: ActivityType;
-  instruction: string;
-  prompt?: string;
-  referenceImages?: string[];
-  items: ActivityItem[];
-  categories?: string[];
-  config?: any;
+export interface Slide {
+  text: string;
+  imageUrl: string;
 }
 
 export interface Question {
-  id: string;
+  type: 'OPEN' | 'MULTIPLE';
+  category: 'CONCEPT' | 'SKILL';
   text: string;
-  options: string[];
-  correctAnswer: number;
-  topic: string;
-  imageUrl?: string;
+  options?: string[];
+  correctAnswer: string;
+  difficulty: 'Kolay' | 'Orta' | 'Zor';
 }
 
-export interface Assessment {
+export interface Subject {
   id: string;
-  title: string;
-  type: 'multiple-choice' | 'mixed';
-  questions: Question[];
-}
-
-export interface Topic {
-  id: string;
-  title: string;
-  coverImage?: string;
-  infographicUrl?: string;
-  presentationSteps: PresentationStep[];
-  activities: Activity[];
-  assessment: Assessment;
-  extraAssessments?: {
-    openEnded?: string[];
+  courseId: string;
+  sectionId?: string; // Hangi bölüme ait olduğu
+  name: string;
+  presentation: {
+    slides: Slide[];
   };
-}
-
-export interface Unit {
-  id: string;
-  title: string;
-  coverImage?: string;
-  topics: Topic[];
-}
-
-export interface BookPage {
-  id: string;
-  content: string;
-  imageUrl?: string;
-}
-
-export interface Assessment5N1K {
-  who: string;
-  what: string;
-  where: string;
-  when: string;
-  why: string;
-  how: string;
-}
-
-export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  coverImage: string;
-  grade: Grade;
-  summary: string;
-  pages: BookPage[];
-  values?: string[];
-  assessment?: {
+  game: {
+    managerInstructions: string;
+    gameConfig: any;
+  };
+  assessment: {
     questions: Question[];
+    outcomes: string;
+  };
+  analysis?: {
+    performanceScore: number;
+    aiFeedback: string;
+    completedAt?: string;
   };
 }
 
-export interface Song {
+export interface Story {
   id: string;
   title: string;
+  description: string;
+  content: string;
+  image: string;
+  createdAt: string;
+}
+
+export interface Music {
+  id: string;
+  title: string;
+  subject: string;
   artist: string;
-  coverImage: string;
-  audioUrl?: string;
-  youtubeUrl?: string;
-  topics: string[];
-  grade: Grade;
+  url: string;
 }
 
 export interface UserProfile {
-  id: string;
   name: string;
-  username: string;
-  password?: string;
-  email: string;
-  phone?: string;
-  grade: Grade;
-  assignedSubject?: Subject;
-  role: 'student' | 'admin';
-  status: 'active' | 'suspended';
-  points: number;
-  badges: Badge[];
-  joinDate: string;
-  interests?: string[];
-  team?: string;
-  sports?: string[];
+  interests: string[];
+  photo: string;
+  bio: string;
 }
 
-export interface QuizResult {
-  assessmentId: string;
-  score: number;
-  wrongTopics: string[];
-  totalQuestions: number;
-  grade: Grade;
-  subject: Subject;
-  topicTitle: string;
-  date: string;
+export interface ScheduleEntry {
+  id: string;
+  day: string;
+  time: string;
+  activity: string;
+  hasAlarm: boolean;
 }
 
-export interface StudyPlan {
-  analysis: string;
-  dailyTasks: { day: string; task: string }[];
-  motivationalQuote: string;
-  teacherNote: string;
+export interface Assignment {
+  id: string;
+  title: string;
+  type: 'Ödev' | 'Proje' | 'Performans';
+  dueDate: string;
+  completed: boolean;
+  hasAlarm: boolean;
+}
+
+export interface DailyTask {
+  id: string;
+  time: string;
+  task: string;
+  completed: boolean;
+  hasAlarm: boolean;
+}
+
+export interface UnitProgress {
+  subjectId: string;
+  subjectName: string;
+  progress: number; // 0-100 (Sunum, Oyun, Ölçme tamamlanma oranı)
+}
+
+export interface UserCourseProgress {
+  courseId: string;
+  courseName: string;
+  totalProgress: number; // 0-100
+  units: UnitProgress[];
+  lastAccessed: string;
+}
+
+export interface TopicComment {
+  id: string;
+  subjectId: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  text: string;
+  createdAt: string;
+  type: 'QUESTION' | 'COMMENT';
+}
+
+export interface SiteSettings {
+  appearance: {
+    primaryColor: string;
+    logo: string;
+  };
+  faq: { question: string; answer: string }[];
+  corporate: { about: string; contact: string };
+  cloud: { apiKey: string; projectId: string };
 }

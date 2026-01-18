@@ -1,166 +1,133 @@
 
-import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { QuizResult, StudyPlan, UserProfile, Assessment5N1K, Book } from "../types.ts";
+import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
 
-// 5N1K Değerlendirme Servisi
-export const grade5N1K = async (book: Book, answers: Assessment5N1K): Promise<{ score: number, feedback: string }> => {
-  const prompt = `
-    Sen bir ilkokul öğretmenisin. Öğrenci bir kitap okudu ve 5N1K sorularını yanıtladı.
-    Kitap: "${book.title}"
-    Kitap Özeti: "${book.summary}"
-    
-    Öğrencinin Cevapları:
-    Kim: ${answers.who}
-    Ne: ${answers.what}
-    Nerede: ${answers.where}
-    Ne Zaman: ${answers.when}
-    Neden: ${answers.why}
-    Nasıl: ${answers.how}
-    
-    Lütfen öğrencinin anlama düzeyini değerlendir. 100 üzerinden bir puan ver ve teşvik edici, yapıcı bir geri bildirim yaz.
-    Yanıtı JSON formatında {"score": sayı, "feedback": "metin"} şeklinde döndür.
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: { 
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: { type: Type.NUMBER },
-            feedback: { type: Type.STRING }
-          }
-        }
+export const generateStoryContent = async (prompt: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Bir çocuk öyküsü yaz. Konu: ${prompt}. Yanıtı JSON formatında ver.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          content: { type: Type.STRING },
+          description: { type: Type.STRING }
+        },
+        required: ["title", "content", "description"]
       }
-    });
-    return JSON.parse(response.text || '{"score": 0, "feedback": "Hata oluştu."}');
-  } catch (error) {
-    return { score: 0, feedback: "Bağlantı hatası, tekrar dene." };
-  }
+    }
+  });
+  return JSON.parse(response.text || "{}");
 };
 
-// Gelişmiş Kişiselleştirilmiş Çalışma Planı Üretimi
-export const generatePersonalizedPlan = async (result: QuizResult, user: UserProfile): Promise<StudyPlan> => {
-  const successRate = Math.min(100, Math.round((result.score / result.totalQuestions) * 100));
+export const generateStoryImage = async (storyTitle: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash-image',
+    contents: {
+      parts: [{ text: `A magical illustration for a story titled: ${storyTitle}. Soft colors, whimsical style.` }]
+    },
+    config: {
+      imageConfig: { aspectRatio: "1:1" }
+    }
+  });
+
+  for (const part of response.candidates?.[0]?.content?.parts || []) {
+    if (part.inlineData) {
+      return `data:image/png;base64,${part.inlineData.data}`;
+    }
+  }
+  return `https://picsum.photos/400/400?random=${Math.random()}`;
+};
+
+export const generatePresentationSlides = async (instructions: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Şu konu hakkında 5 slaytlık bir sunum hazırla: ${instructions}. Her slayt için kısa bir metin ve görsel betimlemesi sağla.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            text: { type: Type.STRING },
+            imagePrompt: { type: Type.STRING }
+          },
+          required: ["text", "imagePrompt"]
+        }
+      }
+    }
+  });
+  const slidesData = JSON.parse(response.text || "[]");
   
-  const prompt = `
-    Sen uzman bir ilkokul eğitim danışmanısın.
-    Öğrenci Bilgileri: ${user.name}, ${result.grade}. Sınıf. 
-    İlgi Alanları: ${user.interests?.join(', ')}, Takımı: ${user.team}, Sevdiği Sporlar: ${user.sports?.join(', ')}.
-    Sınav Sonucu: ${result.subject}, Konu: ${result.topicTitle}, Puan: %${successRate}.
-    
-    Lütfen tavsiyelerini verirken öğrencinin ilgi alanlarından (takımı, hobileri vb.) örnekler vererek onu motive et.
-    JSON formatında "analysis", "dailyTasks", "motivationalQuote", "teacherNote" alanlarını içeren bir yanıt ver.
-  `;
+  // Her slayt için görsel üret
+  const slides = await Promise.all(slidesData.map(async (s: any) => ({
+    text: s.text,
+    imageUrl: await generateStoryImage(s.imagePrompt)
+  })));
+  
+  return slides;
+};
 
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: prompt,
-      config: { 
-        responseMimeType: "application/json",
-        responseSchema: {
+export const generateAssessmentQuestions = async (outcomes: string, count: number, difficulty: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Şu kazanımlar için ${count} adet ${difficulty} seviyesinde soru hazırla: ${outcomes}. Soruların yarısı kavram ölçme (CONCEPT), yarısı bilgiyi kullanma (SKILL) olsun. Hem çoktan seçmeli (MULTIPLE) hem açık uçlu (OPEN) sorular olsun.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.ARRAY,
+        items: {
           type: Type.OBJECT,
           properties: {
-            analysis: { type: Type.STRING },
-            dailyTasks: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  day: { type: Type.STRING },
-                  task: { type: Type.STRING }
-                }
-              }
-            },
-            motivationalQuote: { type: Type.STRING },
-            teacherNote: { type: Type.STRING }
-          }
+            type: { type: Type.STRING, enum: ["OPEN", "MULTIPLE"] },
+            category: { type: Type.STRING, enum: ["CONCEPT", "SKILL"] },
+            text: { type: Type.STRING },
+            options: { type: Type.ARRAY, items: { type: Type.STRING } },
+            correctAnswer: { type: Type.STRING },
+            difficulty: { type: Type.STRING }
+          },
+          required: ["type", "category", "text", "correctAnswer", "difficulty"]
         }
       }
-    });
-    return JSON.parse(response.text || "{}") as StudyPlan;
-  } catch (error) {
-    return { analysis: "Hata oluştu, tekrar dene.", dailyTasks: [], motivationalQuote: "", teacherNote: "" };
-  }
+    }
+  });
+  return JSON.parse(response.text || "[]");
 };
 
-// Açık uçlu soruları değerlendirme servisi
-export const gradeOpenEndedAnswers = async (questions: string[], answers: { text: string, image?: string }[]): Promise<{ score: number, feedback: string[] }> => {
-  const prompt = `
-    Sen bir ilkokul öğretmenisin. Öğrencilerin açık uçlu sorulara verdikleri yanıtları değerlendiriyorsun.
-    Sorular: ${questions.join(' | ')}
-    Öğrenci Cevapları: ${answers.map(a => a.text).join(' | ')}
-    
-    Lütfen her cevabı değerlendir. 100 üzerinden toplam bir puan ver ve her soru için kısa, teşvik edici geri bildirimler yaz.
-    Yanıtı JSON formatında {"score": sayı, "feedback": ["geri bildirim 1", "geri bildirim 2", ...]} şeklinde döndür.
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: { 
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: { type: Type.NUMBER },
-            feedback: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            }
-          }
+export const generateGameLogic = async (instructions: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Şu oyun talimatlarına göre bir mini oyun evreni ve mekaniği tasarla: ${instructions}. JSON formatında oyun objelerini ve kurallarını döndür.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          universeName: { type: Type.STRING },
+          mechanics: { type: Type.STRING },
+          scoring: { type: Type.STRING },
+          puzzles: { type: Type.ARRAY, items: { type: Type.STRING } }
         }
       }
-    });
-    return JSON.parse(response.text || '{"score": 0, "feedback": []}');
-  } catch (error) {
-    return { score: 0, feedback: ["Bağlantı hatası."] };
-  }
+    }
+  });
+  return JSON.parse(response.text || "{}");
 };
 
-export const refineContent = async (type: 'presentation' | 'question' | 'activity', content: string, tone: string = 'eğlenceli ve merak uyandırıcı'): Promise<string> => {
-  const prompt = `Sen uzman bir ilkokul içerik tasarımcısısın. Mevcut İçerik: ${content}`;
-  try {
-    const response = await ai.models.generateContent({ model: "gemini-3-flash-preview", contents: prompt });
-    return response.text || content;
-  } catch (error) { return content; }
+export const askAiAboutSubject = async (subjectName: string, subjectContent: string, question: string) => {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Sen bir ilkokul öğretmenisin. Konu: ${subjectName}. Konu içeriği: ${subjectContent}. Öğrencinin sorusu: ${question}. Lütfen bu soruyu bir ilkokul öğrencisinin anlayabileceği şekilde, nazik, anlaşılır ve teşvik edici bir dille cevapla. Cevabın çok uzun olmasın, öğrencinin merakını canlı tut.`,
+  });
+  return response.text;
 };
-
-export const generateSpeech = async (text: string): Promise<string | undefined> => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
-      },
-    });
-    return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  } catch (error) { return undefined; }
-};
-
-export function decodeBase64(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-  return bytes;
-}
-
-export async function decodeAudioData(data: Uint8Array, ctx: AudioContext, sampleRate: number = 24000, numChannels: number = 1): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer, data.byteOffset, data.byteLength / 2);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-  }
-  return buffer;
-}

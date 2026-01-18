@@ -1,242 +1,245 @@
 
 import React from 'react';
-import Mascot from './Mascot';
-import GradeSymbol from './GradeSymbol';
-import { Grade, UserProfile } from '../types';
+import { InfoPageType } from '../types';
 
 interface LandingPageProps {
-  stats: {
-    totalLessons: number;
-    totalPresentations: number;
-    totalQuestions: number;
-    totalActivities: number;
-  };
-  currentUser: UserProfile;
-  isGuest: boolean;
-  onGradeSelect: (grade: Grade) => void;
-  onLibraryClick: () => void;
-  onMusicClick: () => void;
-  onLoginClick: () => void;
-  isAdmin: boolean;
+  onStart: () => void;
+  onNavigateInfo: (type: InfoPageType) => void;
+  onAdminClick: () => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ stats, currentUser, isGuest, onGradeSelect, onLibraryClick, onMusicClick, onLoginClick, isAdmin }) => {
-  const getWelcomeMessage = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Günaydın Küçük Kaşif!";
-    if (hour < 18) return "Tünaydın Bilgi Avcısı!";
-    return "İyi Akşamlar Geleceğin Yıldızı!";
-  };
-
-  const renderGradeCard = (grade: Grade) => {
-    if (grade === 'SC') return null;
-
-    const isLocked = !isAdmin && !isGuest && grade !== currentUser.grade;
-
-    return (
-      <button
-        key={grade}
-        disabled={isLocked}
-        onClick={() => onGradeSelect(grade)}
-        className={`group bg-white p-6 rounded-[3.5rem] shadow-2xl transition-all duration-300 active:scale-95 flex flex-col items-center border-b-[10px] ${isLocked ? 'opacity-40 grayscale cursor-not-allowed border-gray-200' : 'hover:-translate-y-4 border-blue-100 hover:border-blue-600'} w-full`}
-      >
-        <div className="relative">
-          <GradeSymbol grade={grade} size="md" className="mb-4 transform group-hover:scale-110 transition-transform" />
-          {isLocked && (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-               <i className="fas fa-lock text-3xl"></i>
-            </div>
-          )}
-        </div>
-        <span className="text-slate-800 font-black text-sm uppercase tracking-tighter">
-          {`${grade}. SINIF`}
-        </span>
-        {isLocked && <span className="text-[8px] font-bold text-gray-400 uppercase mt-1 tracking-widest">Senin Kursun Değil</span>}
-      </button>
-    );
-  };
+const LandingPage: React.FC<LandingPageProps> = ({ onStart, onNavigateInfo, onAdminClick }) => {
+  const features = [
+    {
+      title: "Tam MEB Uyumu",
+      description: "Okul derslerinle %100 uyumlu, güncel MEB müfredatını birebir takip eden içerikler.",
+      icon: "🎯",
+      color: "bg-blue-100 text-blue-600"
+    },
+    {
+      title: "İnteraktif Maceralar",
+      description: "Sıkıcı dersler yerine oyunlarla pekiştirme ve eğlenceli öğrenme deneyimi.",
+      icon: "🎮",
+      color: "bg-rose-100 text-rose-600"
+    },
+    {
+      title: "Bireysel Başarı",
+      description: "Her çocuğun kendi hızında ilerlediği, başarıyı ödüllendiren kişiye özel sistem.",
+      icon: "🏆",
+      color: "bg-amber-100 text-amber-600"
+    },
+    {
+      title: "AI Rehberlik",
+      description: "Eksiklerini anında analiz eder ve sana özel çalışma planı sunarak gelişimini destekler.",
+      icon: "✨",
+      color: "bg-emerald-100 text-emerald-600"
+    }
+  ];
 
   return (
-    <div className="space-y-24 animate-fadeIn">
-      {/* 1. HERO SECTION */}
-      <section className="relative">
-        <div className="bg-gradient-to-br from-indigo-600 via-blue-500 to-emerald-400 rounded-[5rem] p-12 md:p-20 text-white shadow-2xl relative overflow-hidden">
-          
-          {/* SAĞ ÜST GİRİŞ BUTONU */}
-          {isGuest && (
-            <button 
-              onClick={onLoginClick}
-              className="absolute top-8 right-8 md:top-12 md:right-12 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-md px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/30 transition-all active:scale-95 flex items-center gap-2 group"
-            >
-              <i className="fas fa-user-circle text-lg group-hover:rotate-12 transition-transform"></i>
-              Giriş Yap
-            </button>
-          )}
+    <div className="flex flex-col min-h-screen selection:bg-indigo-100 selection:text-indigo-900">
+      
+      {/* HERO SECTION - Boşluklar Azaltıldı */}
+      <section className="relative overflow-hidden pt-6 pb-12 lg:pt-10 lg:pb-16 bg-white border-b border-slate-50">
+        <div className="blob w-96 h-96 bg-indigo-200 top-[-10%] left-[-5%] rounded-full"></div>
+        <div className="blob w-80 h-80 bg-rose-100 bottom-[-10%] right-[10%] rounded-full"></div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1">
-              <div className="inline-block bg-white/20 px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 backdrop-blur-md">
-                {isGuest ? 'KEŞİF MODU AKTİF! ✨' : `SELAM ${currentUser.name.split(' ')[0]}! 🍎`}
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-10">
+            <div className="flex-1 text-center lg:text-left space-y-6 animate-in fade-in slide-in-from-left-12 duration-1000">
+              <div className="inline-flex items-center gap-2 px-4 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
+                <span className="text-xs animate-pulse">🛡️</span>
+                <span className="text-indigo-600 font-black text-[10px] uppercase tracking-widest">Ebeveyn Onaylı & %100 Güvenli</span>
               </div>
-              <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase leading-[0.85] mb-6">
-                {getWelcomeMessage()}
+              
+              <h1 className="text-5xl lg:text-7xl font-black text-slate-900 tracking-tighter leading-[0.95]">
+                Dersler Artık <br /> 
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-rose-500 to-amber-500">
+                  Bir Macera!
+                </span>
               </h1>
-              <p className="text-xl md:text-2xl font-medium text-blue-50/90 italic max-w-2xl mb-12">
-                {isGuest 
-                  ? "Tüm sınıfları ve müfredatı inceleyebilirsin. Dersleri başlatmak için aramıza katıl!" 
-                  : `Bugün senin için hazırladığımız ${currentUser.grade}. Sınıf maceralarına atılmaya ne dersin?`}
+              
+              <p className="text-lg lg:text-xl text-slate-500 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
+                MEB müfredatı, eğlenceli oyunlar ve sana özel AI öğretmenle okul başarısı hiç bu kadar keyifli olmamıştı.
               </p>
               
-              <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-                 <button onClick={onLibraryClick} className="bg-white text-indigo-600 px-10 py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 transition-all">
-                   📚 Büyülü Kütüphane
-                 </button>
-                 <button onClick={onMusicClick} className="bg-pink-500 text-white px-10 py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest shadow-2xl hover:scale-105 transition-all border-b-4 border-pink-700">
-                   🎵 Notalı Bahçe
-                 </button>
+              <div className="flex flex-col sm:flex-row items-center gap-4 pt-2 justify-center lg:justify-start">
+                <button 
+                  onClick={onStart}
+                  className="group px-10 py-4 bg-indigo-600 text-white rounded-[2rem] font-black text-xl shadow-[0_15px_30px_rgba(79,70,229,0.2)] hover:bg-indigo-700 transition-all active:scale-95 flex items-center gap-3"
+                >
+                  <span>Hadi Başlayalım!</span>
+                  <span className="text-2xl group-hover:translate-x-2 transition-transform">🚀</span>
+                </button>
+                <div className="flex flex-col items-center lg:items-start opacity-70">
+                  <div className="flex -space-x-2 mb-0.5">
+                    {[1,2,3,4].map(i => <img key={i} src={`https://picsum.photos/32/32?u=${i}`} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" alt="Student" />)}
+                  </div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">+10.000 Mutlu Öğrenci</p>
+                </div>
               </div>
             </div>
 
-            {/* Sadece 1-4. Sınıf Kartları */}
-            <div className="grid grid-cols-2 gap-4 w-full lg:w-96">
-               {[1, 2, 3, 4].map(g => renderGradeCard(g as Grade))}
+            <div className="flex-1 relative animate-in fade-in zoom-in duration-1000 delay-300">
+              <div className="relative group max-w-md mx-auto">
+                <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-rose-500 to-amber-500 rounded-[3.5rem] blur-xl opacity-10"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1544717297-fa95b3ee51f3?auto=format&fit=crop&q=80&w=1000" 
+                  alt="Cheerful child learning" 
+                  className="relative z-10 w-full rounded-[3rem] shadow-xl border-[8px] border-white transform hover:scale-[1.01] transition-transform duration-700"
+                />
+              </div>
             </div>
           </div>
-          <div className="absolute top-10 left-10 opacity-20"><Mascot type="rabbit" size="xl" className="rotate-12" /></div>
         </div>
       </section>
 
-      {/* 2. FEATURES SECTION */}
-      <section id="kesfet" className="max-w-7xl mx-auto px-6">
-         <div className="text-center mb-20">
-            <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase mb-4">NEDEN WEBİLKOKULU?</h2>
-            <div className="h-2 w-40 bg-blue-600 mx-auto rounded-full"></div>
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-slate-50 hover:shadow-2xl transition-all group">
-               <div className="w-16 h-16 bg-orange-50 text-orange-600 rounded-[1.5rem] flex items-center justify-center text-3xl mb-8 group-hover:bg-orange-600 group-hover:text-white transition-all">
-                 <i className="fas fa-check-double"></i>
-               </div>
-               <h3 className="text-2xl font-black text-slate-800 uppercase mb-4 leading-none">Tam MEB Uyumu</h3>
-               <p className="text-slate-500 font-medium text-sm leading-relaxed">Okul derslerinle %100 uyumlu, güncel MEB müfredatını birebir takip eden içerikler.</p>
+      {/* EBEVEYNLER İÇİN GÜVEN BÖLÜMÜ - Boşluklar Minimumda */}
+      <section className="py-4 bg-indigo-50/50">
+        <div className="container mx-auto px-6">
+          <div className="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-sm border border-indigo-50 flex flex-col lg:flex-row items-center gap-6">
+            <div className="flex-1 space-y-3">
+              <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🤝</div>
+              <h2 className="text-2xl font-black text-slate-900 leading-tight">
+                Ebeveynler İçin <span className="text-emerald-600">Tam Güven</span>
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                Reklamsız, MEB uyumlu ve yapay zeka denetimli sistemimizle çocuğunuzun gelişimini her an takip edin.
+              </p>
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {['%100 Reklamsız', 'KVKK Uyumlu', 'Haftalık Rapor'].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-slate-700 font-bold text-xs">
+                    <span className="text-emerald-500 text-sm">✔</span> {item}
+                  </div>
+                ))}
+              </div>
             </div>
-
-            <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-slate-50 hover:shadow-2xl transition-all group">
-               <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[1.5rem] flex items-center justify-center text-3xl mb-8 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                 <i className="fas fa-gamepad"></i>
-               </div>
-               <h3 className="text-2xl font-black text-slate-800 uppercase mb-4 leading-none">İnteraktif Maceralar</h3>
-               <p className="text-slate-500 font-medium text-sm leading-relaxed">Sıkıcı dersler yerine oyunlar ve sürükle-bırak etkinliklerle keşfederek öğrenme.</p>
+            <div className="flex shrink-0 gap-4">
+              <div className="bg-slate-50 px-6 py-4 rounded-3xl text-center">
+                <p className="text-2xl font-black text-indigo-600 leading-none">4.9/5</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase mt-1">Veli Puanı</p>
+              </div>
+              <div className="bg-slate-50 px-6 py-4 rounded-3xl text-center">
+                <p className="text-2xl font-black text-emerald-500 leading-none">100%</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase mt-1">Güvenli</p>
+              </div>
             </div>
-
-            <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-slate-50 hover:shadow-2xl transition-all group">
-               <div className="w-16 h-16 bg-purple-50 text-purple-600 rounded-[1.5rem] flex items-center justify-center text-3xl mb-8 group-hover:bg-purple-600 group-hover:text-white transition-all">
-                 <i className="fas fa-award"></i>
-               </div>
-               <h3 className="text-2xl font-black text-slate-800 uppercase mb-4 leading-none">Bireysel Başarı Modeli</h3>
-               <p className="text-slate-500 font-medium text-sm leading-relaxed">Her çocuğun kendi hızında ilerlediği, başarıyı ödüllendiren kişiye özel sistem.</p>
-            </div>
-
-            <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-slate-50 hover:shadow-2xl transition-all group">
-               <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[1.5rem] flex items-center justify-center text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                 <i className="fas fa-brain"></i>
-               </div>
-               <h3 className="text-2xl font-black text-slate-800 uppercase mb-4 leading-none">AI Rehberlik</h3>
-               <p className="text-slate-500 font-medium text-sm leading-relaxed">Fikir ve Bilkuş, eksiklerini anında analiz eder ve sana özel çalışma planı sunar.</p>
-            </div>
-         </div>
+          </div>
+        </div>
       </section>
 
-      {/* 3. SESTEN CÜMLEYE - ÖZEL TANITIM BLOĞU */}
-      <section className="max-w-7xl mx-auto px-6">
-         <div 
-           onClick={() => onGradeSelect('SC')}
-           className="bg-white rounded-[5rem] overflow-hidden shadow-2xl border-4 border-fuchsia-100 flex flex-col lg:flex-row cursor-pointer group hover:border-fuchsia-400 transition-all duration-500"
-         >
-            <div className="bg-fuchsia-500 p-12 lg:w-1/3 flex flex-col items-center justify-center relative overflow-hidden group-hover:bg-fuchsia-600 transition-colors">
-               <GradeSymbol grade="SC" size="lg" className="mb-6 relative z-10" />
-               <div className="text-white text-center relative z-10">
-                  <h3 className="text-3xl font-black uppercase tracking-tighter">SES DÜNYASI</h3>
-                  <p className="text-fuchsia-200 font-bold text-xs uppercase tracking-widest mt-2">Okuma Yazmaya İlk Adım</p>
-               </div>
-               <div className="absolute -bottom-10 -left-10 opacity-10 rotate-12 group-hover:scale-110 transition-transform">
-                  <Mascot type="owl" size="xl" />
-               </div>
-            </div>
-
-            <div className="p-12 lg:w-2/3 flex flex-col justify-center space-y-6 relative">
-               <div className="flex items-center gap-3">
-                  <span className="bg-fuchsia-100 text-fuchsia-600 px-4 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">YENİ MÜFREDAT UYUMLU</span>
-                  <div className="h-1 flex-1 bg-fuchsia-50 rounded-full"></div>
-               </div>
-               
-               <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                  SESTEN CÜMLEYE: <br/> 
-                  <span className="text-fuchsia-600">ANLAYARAK OKUMA</span> SİSTEMİ
-               </h2>
-
-               <p className="text-xl text-slate-500 font-medium leading-relaxed italic">
-                  "Harfler sadece birer çizgi değildir; onlar birer ses, birer duygu ve birer hikayedir. 
-                  Yaratıcı metinlerimiz ve etkileşimli oyunlarımızla çocuğunuz okumayı ezberleyerek değil, 
-                  <span className="text-slate-800 font-black not-italic"> neşeyle keşfederek ve anlayarak öğrenecek!</span>"
-               </p>
-
-               <div className="flex flex-wrap gap-6 pt-4">
-                  <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <i className="fas fa-magic"></i>
-                     </div>
-                     <span className="font-black text-xs text-slate-600 uppercase">Etkileşimli Hikayeler</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <i className="fas fa-brain"></i>
-                     </div>
-                     <span className="font-black text-xs text-slate-600 uppercase">Yaratıcı Kavrama</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <i className="fas fa-smile-beam"></i>
-                     </div>
-                     <span className="font-black text-xs text-slate-600 uppercase">Eğlenceli Süreç</span>
-                  </div>
-               </div>
-
-               <div className="pt-6">
-                  <button className="bg-slate-900 text-white px-10 py-5 rounded-[2rem] font-black uppercase text-sm tracking-widest shadow-xl group-hover:bg-fuchsia-600 group-hover:scale-105 transition-all">
-                     Okumayı Keşfet <i className="fas fa-arrow-right ml-3 animate-bounce-x"></i>
+      {/* ÇOCUKLAR İÇİN BLOKLAR */}
+      <section className="py-10 bg-white">
+        <div className="container mx-auto px-6 text-center mb-6 space-y-1">
+          <h2 className="text-4xl font-black text-slate-900">Dünyanı Keşfet</h2>
+          <p className="text-lg text-slate-400 font-medium italic">Hangi odaya girmek istersin?</p>
+        </div>
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl hover:-translate-y-1 transition-all">
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-[8rem] group-hover:scale-110 transition-transform pointer-events-none">📚</div>
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-xl flex items-center justify-center text-2xl shrink-0">✨</div>
+                  <h3 className="text-2xl lg:text-3xl font-black leading-tight">Masal & Öykü <br className="hidden sm:block" /> Kütüphanesi</h3>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <p className="text-indigo-100 text-sm leading-relaxed flex-1 font-medium">
+                    Kendi kahramanını seç, AI ile oluşturulan masalların içinde kaybol ve okuma becerini geliştir!
+                  </p>
+                  <button onClick={onStart} className="shrink-0 px-8 py-3.5 bg-white text-indigo-700 rounded-2xl font-black text-base shadow-lg hover:scale-105 transition-all">
+                    Kitapları Aç
                   </button>
-               </div>
+                </div>
+              </div>
             </div>
-         </div>
+
+            <div className="group relative overflow-hidden bg-gradient-to-br from-rose-400 via-rose-500 to-amber-500 rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl hover:-translate-y-1 transition-all">
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-[8rem] group-hover:scale-110 transition-transform pointer-events-none">🎵</div>
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-xl flex items-center justify-center text-2xl shrink-0">🌈</div>
+                  <h3 className="text-2xl lg:text-3xl font-black leading-tight">Eğlenceli <br className="hidden sm:block" /> Müzik Odası</h3>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <p className="text-rose-50 text-sm leading-relaxed flex-1 font-medium">
+                    Ritimle öğren, şarkılarla dans et! Notaların dünyasında harika bir yolculuğa çıkmaya hazır mısın?
+                  </p>
+                  <button onClick={onStart} className="shrink-0 px-8 py-3.5 bg-white text-rose-600 rounded-2xl font-black text-base shadow-lg hover:scale-105 transition-all">
+                    Notaları Keşfet
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* 4. STATS SECTION */}
-      <section className="bg-slate-900 rounded-[6rem] p-16 md:p-24 text-white relative overflow-hidden mx-4">
-         <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
-            <div className="space-y-4">
-               <i className="fas fa-book-open text-blue-400 text-4xl mb-2"></i>
-               <div className="text-6xl font-black tracking-tighter leading-none">{stats.totalLessons}</div>
-               <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Toplam Kurs</div>
-            </div>
-            <div className="space-y-4">
-               <i className="fas fa-photo-video text-emerald-400 text-4xl mb-2"></i>
-               <div className="text-6xl font-black tracking-tighter leading-none">{stats.totalPresentations}</div>
-               <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sunum Kartı</div>
-            </div>
-            <div className="space-y-4">
-               <i className="fas fa-puzzle-piece text-orange-400 text-4xl mb-2"></i>
-               <div className="text-6xl font-black tracking-tighter leading-none">{stats.totalActivities}</div>
-               <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">İnteraktif Oyun</div>
-            </div>
-            <div className="space-y-4">
-               <i className="fas fa-tasks text-purple-400 text-4xl mb-2"></i>
-               <div className="text-6xl font-black tracking-tighter leading-none">{stats.totalQuestions}</div>
-               <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Soru Bankası</div>
-            </div>
-         </div>
-         <div className="absolute right-[-10%] bottom-[-10%] opacity-10"><Mascot type="owl" size="xl" /></div>
+      {/* NEDEN WEBİLKOKULU SECTION - Boşluklar Optimize Edildi */}
+      <section className="py-10 bg-slate-50">
+        <div className="container mx-auto px-6 text-center mb-8">
+          <h3 className="text-3xl font-black text-slate-800 tracking-tight">Neden WEBİLKOKULU?</h3>
+          <p className="text-slate-400 mt-1 text-lg font-medium">Eğitimin en eğlenceli hali.</p>
+        </div>
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, idx) => (
+              <div key={idx} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group">
+                <div className={`w-16 h-16 ${feature.color} rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 transition-transform`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-black text-slate-800 mb-3 tracking-tight">{feature.title}</h3>
+                <p className="text-slate-500 leading-relaxed text-sm font-medium">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
+
+      {/* Footer - Sıkıştırılmış */}
+      <footer className="py-12 bg-slate-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-12 relative z-10">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center font-black text-xl">W</div>
+              <span className="text-2xl font-black tracking-tighter">WEBİLKOKULU</span>
+            </div>
+            <p className="text-slate-400 text-lg leading-relaxed max-w-md font-medium">
+              Çocukların hayallerini, ebeveynlerin güvenini birleştirdik.
+            </p>
+            <button onClick={onAdminClick} className="px-5 py-2.5 bg-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-colors">Yönetici Paneli 🔒</button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-8 lg:col-span-1">
+            <div className="space-y-4">
+              <h4 className="font-black text-indigo-400 tracking-widest uppercase text-[10px]">Keşfet</h4>
+              <ul className="text-slate-400 text-sm space-y-2 font-bold">
+                <li onClick={() => onNavigateInfo('ABOUT')} className="hover:text-white cursor-pointer">Hakkımızda</li>
+                <li onClick={() => onNavigateInfo('CONTACT')} className="hover:text-white cursor-pointer">İletişim</li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h4 className="font-black text-rose-400 tracking-widest uppercase text-[10px]">Yasal</h4>
+              <ul className="text-slate-400 text-sm space-y-2 font-bold">
+                <li onClick={() => onNavigateInfo('PRIVACY')} className="hover:text-white cursor-pointer">Gizlilik</li>
+                <li onClick={() => onNavigateInfo('FAQ')} className="hover:text-white cursor-pointer">SSS</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="space-y-4 lg:col-span-1">
+            <h4 className="font-black text-amber-400 tracking-widest uppercase text-[10px]">E-Bülten</h4>
+            <div className="flex gap-2">
+              <input type="email" placeholder="E-posta" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              <button className="bg-indigo-600 px-4 rounded-xl text-xs font-black shadow-lg">Katıl</button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-6 pt-8 mt-10 border-t border-slate-800/50 text-center text-slate-600 text-[8px] font-black tracking-[0.3em] uppercase">
+          &copy; 2025 WEBİLKOKULU.
+        </div>
+      </footer>
     </div>
   );
 };
