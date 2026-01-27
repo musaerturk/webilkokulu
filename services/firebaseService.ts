@@ -1,104 +1,146 @@
 
-import { initializeApp } from "firebase/app";
 import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  where,
-  setDoc,
-  getDoc,
-  orderBy
-} from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+    collection, 
+    getDocs, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc, 
+    orderBy, 
+    query,
+    setDoc,
+    getDoc
+} from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { Song, Book, Course, User, CorporateContent, CorporatePageName, CorporatePageData, SiteSettings } from '../types';
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "AIzaSy...",
-  authDomain: "webilkokulu-portal.firebaseapp.com",
-  projectId: "webilkokulu-portal",
-  storageBucket: "webilkokulu-portal.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+// --- COLLECTIONS ---
+const songsCollection = collection(db, 'songs');
+const booksCollection = collection(db, 'books');
+const coursesCollection = collection(db, 'courses');
+const usersCollection = collection(db, 'users');
+
+// --- CORPORATE & SITE SETTINGS ---
+const corporateContentDoc = doc(db, 'settings', 'corporateContent');
+const siteSettingsDoc = doc(db, 'settings', 'siteSettings');
+
+export const getCorporateContent = async (): Promise<CorporateContent> => {
+    const docSnap = await getDoc(corporateContentDoc);
+    if (docSnap.exists()) {
+        return docSnap.data() as CorporateContent;
+    } else {
+        // If it doesn't exist, create it with initial data (optional)
+        const initialContent: CorporateContent = { /* your initial data here */ about: {title: "Hakkımızda", content: ""}, privacy: {title: "Gizlilik", content: ""}, terms: {title: "Kullanım Şartları", content: ""}, contact: {title: "İletişim", content: ""}, faq: {title: "SSS", content: ""}, social: {title: "Sosyal Medya", content: ""}};
+        await setDoc(corporateContentDoc, initialContent);
+        return initialContent;
+    }
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-
-// Genel Veri İşlemleri
-export const saveData = async (colName: string, data: any) => {
-  try {
-    const colRef = collection(db, colName);
-    const docRef = await addDoc(colRef, { ...data, createdAt: new Date().toISOString() });
-    return docRef.id;
-  } catch (error) {
-    console.error(`Save error in ${colName}:`, error);
-    throw error;
-  }
+export const updateCorporateContent = async (pageName: CorporatePageName, data: CorporatePageData): Promise<void> => {
+    await updateDoc(corporateContentDoc, { [pageName]: data });
 };
 
-export const fetchData = async (colName: string) => {
-  try {
-    const colRef = collection(db, colName);
-    const snapshot = await getDocs(colRef);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (error) {
-    console.error(`Fetch error in ${colName}:`, error);
-    return [];
-  }
+export const getSiteSettings = async (): Promise<SiteSettings> => {
+    const docSnap = await getDoc(siteSettingsDoc);
+    if (docSnap.exists()) {
+        return docSnap.data() as SiteSettings;
+    } else {
+        const initialSettings: SiteSettings = { logoUrl: '' };
+        await setDoc(siteSettingsDoc, initialSettings);
+        return initialSettings;
+    }
 };
 
-export const updateData = async (colName: string, id: string, data: any) => {
-  try {
-    const docRef = doc(db, colName, id);
-    return await updateDoc(docRef, data);
-  } catch (error) {
-    console.error(`Update error in ${colName}:`, error);
-    throw error;
-  }
+export const updateSiteSettings = async (updates: Partial<SiteSettings>): Promise<void> => {
+    await setDoc(siteSettingsDoc, updates, { merge: true });
 };
 
-export const removeData = async (colName: string, id: string) => {
-  try {
-    const docRef = doc(db, colName, id);
-    return await deleteDoc(docRef);
-  } catch (error) {
-    console.error(`Remove error in ${colName}:`, error);
-    throw error;
-  }
+// NOTE: Real password management should use Firebase Authentication. This is a placeholder.
+export const updateAdminPassword = async (oldPass: string, newPass: string): Promise<{success: boolean; message: string}> => {
+    if (oldPass !== '12345') { // This check remains a mock.
+        return { success: false, message: 'Eski şifreniz yanlış.' };
+    }
+    console.log(`Password update simulated for security. In production, use Firebase Auth.`);
+    return { success: true, message: 'Şifreniz başarıyla güncellendi (Simülasyon).' };
 };
 
-// Profil İşlemleri
-export const saveUserProfile = async (userId: string, profile: any) => {
-  const docRef = doc(db, "profiles", userId);
-  return await setDoc(docRef, profile, { merge: true });
+
+// --- SONGS API ---
+export const getSongs = async (): Promise<Song[]> => {
+  const q = query(songsCollection, orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Song));
+};
+export const addSong = async (songData: Omit<Song, 'id' | 'createdAt'>): Promise<Song> => {
+  const docRef = await addDoc(songsCollection, { ...songData, createdAt: Date.now() });
+  return { id: docRef.id, ...songData, createdAt: Date.now() };
+};
+export const updateSong = async (songId: string, updates: Partial<Omit<Song, 'id' | 'createdAt'>>): Promise<void> => {
+  await updateDoc(doc(db, 'songs', songId), updates);
+};
+export const deleteSong = async (songId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'songs', songId));
 };
 
-export const getUserProfile = async (userId: string) => {
-  const docRef = doc(db, "profiles", userId);
-  const snapshot = await getDoc(docRef);
-  return snapshot.exists() ? snapshot.data() : null;
+// --- BOOKS API ---
+export const getBooks = async (): Promise<Book[]> => {
+  const q = query(booksCollection, orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Book));
+};
+export const addBook = async (bookData: Omit<Book, 'id' | 'createdAt'>): Promise<Book> => {
+  const docRef = await addDoc(booksCollection, { ...bookData, createdAt: Date.now() });
+  return { id: docRef.id, ...bookData, createdAt: Date.now() };
+};
+export const updateBook = async (bookId: string, updates: Partial<Omit<Book, 'id' | 'createdAt'>>): Promise<void> => {
+  await updateDoc(doc(db, 'books', bookId), updates);
+};
+export const deleteBook = async (bookId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'books', bookId));
 };
 
-// Yorum ve Soru İşlemleri
-export const getTopicComments = async (subjectId: string) => {
-  try {
-    const colRef = collection(db, "comments");
-    const q = query(colRef, where("subjectId", "==", subjectId), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } catch (e) {
-    return [];
-  }
+// --- COURSES API ---
+export const getCourses = async (): Promise<Course[]> => {
+    const snapshot = await getDocs(coursesCollection);
+    const courses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
+    // Sort locally as Firestore multi-field ordering can be complex
+    return courses.sort((a, b) => {
+        if (a.level < b.level) return -1;
+        if (a.level > b.level) return 1;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+    });
 };
+export const addCourse = async (courseData: Omit<Course, 'id' | 'createdAt' | 'sections'>): Promise<Course> => {
+    const newCourse = { ...courseData, sections: [], createdAt: Date.now() };
+    const docRef = await addDoc(coursesCollection, newCourse);
+    return { id: docRef.id, ...newCourse };
+};
+export const updateCourse = async (courseId: string, updates: Partial<Omit<Course, 'id' | 'createdAt' | 'sections'>>): Promise<void> => {
+    await updateDoc(doc(db, 'courses', courseId), updates);
+};
+export const deleteCourse = async (courseId: string): Promise<void> => {
+    await deleteDoc(doc(db, 'courses', courseId));
+};
+export const saveCourseStructure = async (updatedCourse: Course): Promise<void> => {
+    const { id, ...courseData } = updatedCourse;
+    await setDoc(doc(db, 'courses', id), courseData);
+}
 
-// Dosya Yükleme (Müzik & Görsel)
-export const uploadFile = async (path: string, file: File) => {
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file);
-  return await getDownloadURL(storageRef);
+// --- USERS API ---
+export const getUsers = async (): Promise<User[]> => {
+  const q = query(usersCollection, orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+};
+export const addUser = async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
+  // NOTE: Real password should be handled by Firebase Authentication
+  const newUser = { ...userData, createdAt: Date.now() };
+  const docRef = await addDoc(usersCollection, newUser);
+  return { id: docRef.id, ...newUser };
+};
+export const updateUser = async (userId: string, updates: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<void> => {
+  await updateDoc(doc(db, 'users', userId), updates);
+};
+export const deleteUser = async (userId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'users', userId));
 };

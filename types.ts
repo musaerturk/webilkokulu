@@ -1,154 +1,222 @@
 
-export type PanelType = 'HOME' | 'ADMIN' | 'USER' | 'INFO';
-export type InfoPageType = 'ABOUT' | 'CONTACT' | 'CAREER' | 'FAQ' | 'PRIVACY' | 'TERMS';
-
-export interface Category {
+export interface Song {
   id: string;
-  name: string;
-  image: string;
-  subCategories: SubCategory[];
+  title: string;
+  subject: string;
+  url: string;
+  createdAt: number;
 }
 
-export interface SubCategory {
-  id: string;
-  name: string;
-  image: string;
-}
-
-export interface Course {
-  id: string;
-  categoryId: string;
-  subCategoryId: string;
-  name: string;
-  description: string;
-  image: string;
-  info: string;
-}
-
-export interface Section {
-  id: string;
-  courseId: string;
-  name: string;
-  order: number;
-}
-
-export interface Slide {
+export interface Page {
+  id:string;
+  pageNumber: number;
   text: string;
   imageUrl: string;
 }
 
-export interface Question {
-  type: 'OPEN' | 'MULTIPLE';
-  category: 'CONCEPT' | 'SKILL';
-  text: string;
-  options?: string[];
-  correctAnswer: string;
-  difficulty: 'Kolay' | 'Orta' | 'Zor';
-}
-
-export interface Subject {
-  id: string;
-  courseId: string;
-  sectionId?: string; // Hangi bölüme ait olduğu
-  name: string;
-  presentation: {
-    slides: Slide[];
-  };
-  game: {
-    managerInstructions: string;
-    gameConfig: any;
-  };
-  assessment: {
-    questions: Question[];
-    outcomes: string;
-  };
-  analysis?: {
-    performanceScore: number;
-    aiFeedback: string;
-    completedAt?: string;
-  };
-}
-
-export interface Story {
+export interface Book {
   id: string;
   title: string;
-  description: string;
-  content: string;
-  image: string;
-  createdAt: string;
-}
-
-export interface Music {
-  id: string;
-  title: string;
+  coverImageUrl: string;
+  level: '1. Sınıf' | '2. Sınıf' | '3. Sınıf' | '4. Sınıf';
   subject: string;
-  artist: string;
-  url: string;
+  values: string; // "Değerler"
+  genre: string; // "Türü"
+  pages: Page[];
+  createdAt: number;
 }
 
-export interface UserProfile {
-  name: string;
-  interests: string[];
-  photo: string;
-  bio: string;
-}
 
-export interface ScheduleEntry {
-  id: string;
-  day: string;
-  time: string;
-  activity: string;
-  hasAlarm: boolean;
-}
-
-export interface Assignment {
+// Course Structure
+export interface Course {
   id: string;
   title: string;
-  type: 'Ödev' | 'Proje' | 'Performans';
-  dueDate: string;
-  completed: boolean;
-  hasAlarm: boolean;
+  level: '1. Sınıf' | '2. Sınıf' | '3. Sınıf' | '4. Sınıf';
+  description: string;
+  coverImageUrl: string;
+  sections: CourseSection[];
+  createdAt: number;
 }
 
-export interface DailyTask {
+export interface CourseSection {
   id: string;
-  time: string;
-  task: string;
-  completed: boolean;
-  hasAlarm: boolean;
+  title: string;
+  topics: Topic[];
 }
 
-export interface UnitProgress {
-  subjectId: string;
-  subjectName: string;
-  progress: number; // 0-100 (Sunum, Oyun, Ölçme tamamlanma oranı)
-}
-
-export interface UserCourseProgress {
-  courseId: string;
-  courseName: string;
-  totalProgress: number; // 0-100
-  units: UnitProgress[];
-  lastAccessed: string;
-}
-
-export interface TopicComment {
+export interface Topic {
   id: string;
-  subjectId: string;
-  userId: string;
-  userName: string;
-  userPhoto: string;
+  title: string;
+  presentation: Presentation;
+  games: Game[];
+  assessment: Assessment;
+  activities: Activity[];
+}
+
+// Topic Content: Presentation
+export interface Quiz {
+  question: string;
+  options: string[];
+  correctAnswerIndex: number;
+}
+
+export interface Presentation {
+  type: 'ai' | 'manual';
+  aiPrompt?: string;
+  pages: PresentationPage[];
+}
+
+export interface PresentationPage {
+  id: string;
+  pageNumber: number;
   text: string;
-  createdAt: string;
-  type: 'QUESTION' | 'COMMENT';
+  imageUrl?: string;
+  videoUrl?: string;
+  audioScript?: string;
+  quiz?: Quiz;
 }
 
+// Topic Content: Game
+export type GameEngineType = 'RACE_ENGINE' | 'HUNT_ENGINE' | 'GUESS_ENGINE' | 'QUIZ_SHOW';
+
+export const gameEngineNames: Record<GameEngineType, string> = {
+  RACE_ENGINE: 'Yarış Motoru',
+  HUNT_ENGINE: 'Hazine Avı Motoru',
+  GUESS_ENGINE: 'Tahmin Motoru',
+  QUIZ_SHOW: 'Bilgi Yarışması',
+};
+
+export const gameThemes: Record<GameEngineType, { id: string; name: string }[]> = {
+    RACE_ENGINE: [
+        { id: 'athletics', name: 'Atletizm Yarışı' },
+        { id: 'space_race', name: 'Uzay Yarışı' },
+        { id: 'car_race', name: 'Motor Yarışı' },
+        { id: 'kite_race', name: 'Uçurtma Yarışı' },
+    ],
+    HUNT_ENGINE: [
+        { id: 'museum_hunt', name: 'Müzede Hazine Avı' },
+        { id: 'map_hunt', name: 'Harita ile Hazine Avı' },
+        { id: 'library_hunt', name: 'Kütüphanede Hazine Avı' },
+    ],
+    GUESS_ENGINE: [
+        { id: 'riddle', name: 'Bilmece' },
+        { id: 'whats_this', name: 'Bu Ne?' },
+    ],
+    QUIZ_SHOW: [
+        { id: 'classic_quiz', name: 'Klasik Bilgi Yarışması' },
+    ],
+};
+
+export interface Game {
+  id: string;
+  engine: GameEngineType;
+  theme: string;
+  title: string;
+  aiPrompt: string;
+  generatedContent?: any;
+  isGenerating?: boolean;
+}
+
+
+// Topic Content: Assessment
+export interface Assessment {
+  type: 'ai' | 'manual' | 'pdf';
+  aiPrompt?: string;
+  examType?: 'topic_scan' | 'knowledge_application';
+  pdfUrl?: string;
+  questions: Question[];
+}
+
+export interface Question {
+  id: string;
+  type: 'multiple_choice' | 'open_ended';
+  questionText: string;
+  questionImageUrl?: string;
+  options?: MultipleChoiceOption[];
+  correctOptionId?: string;
+}
+
+export interface MultipleChoiceOption {
+  id:string;
+  text: string;
+}
+
+// Topic Content: Activity
+export type ActivityType = 'crossword' | 'matching' | 'grouping' | 'ordering' | 'fill_in_the_blanks' | 'reading_comprehension';
+
+export const activityTypeNames: Record<ActivityType, string> = {
+  crossword: 'Çengel Bulmaca',
+  matching: 'Eşleştirme',
+  grouping: 'Gruplama',
+  ordering: 'Sıralama',
+  fill_in_the_blanks: 'Boşluk Doldurma',
+  reading_comprehension: 'Metin Anlama'
+};
+
+export interface Activity {
+  id: string;
+  type: ActivityType;
+  title: string;
+  aiPrompt: string;
+  generatedContent?: any; // To store AI-generated JSON
+  isGenerating?: boolean;
+}
+
+
+// Student Progress Tracking
+export interface TopicProgress {
+  presentationScore?: number; // out of 100
+  activityScore?: number; // out of 100
+  gameScores?: { [gameId: string]: number }; // out of 100
+  assessmentScore?: number; // out of 100
+  isCompleted: boolean;
+  coachFeedback?: string;
+  coachFeedbackLoading?: boolean;
+}
+
+export interface CourseProgress {
+  [topicId: string]: TopicProgress;
+}
+
+// User Management
+export interface User {
+  id: string;
+  username: string;
+  password?: string;
+  level: '1. Sınıf' | '2. Sınıf' | '3. Sınıf' | '4. Sınıf';
+  createdAt: number;
+
+  // Student-managed profile info for AI personalization
+  hobbies?: string;
+  skills?: string;
+  favoriteSubject?: string;
+  favoriteFood?: string;
+  favoriteDay?: string;
+  favoriteSeason?: string;
+  favoriteTeam?: string;
+  favoriteSport?: string;
+}
+
+// Chat interface
+export interface ChatMessage {
+    role: 'user' | 'model';
+    text: string;
+}
+
+// Corporate Content
+export type CorporatePageName = 'about' | 'privacy' | 'terms' | 'contact' | 'faq' | 'social';
+
+export interface CorporatePageData {
+    title: string;
+    content: string;
+}
+
+export type CorporateContent = {
+    [key in CorporatePageName]: CorporatePageData;
+};
+
+
+// General Site Settings
 export interface SiteSettings {
-  appearance: {
-    primaryColor: string;
-    logo: string;
-  };
-  faq: { question: string; answer: string }[];
-  corporate: { about: string; contact: string };
-  cloud: { apiKey: string; projectId: string };
+    logoUrl: string;
 }

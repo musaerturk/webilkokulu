@@ -1,8 +1,8 @@
 
 {
-  "name": "WEBİLKOKULU",
-  "description": "WEBİLKOKULU - Sana özel okul. MEB uyumlu, AI destekli modern eğitim platformu.",
+  "name": "İlkokul Kurs Yönetim Paneli",
+  "description": "İlkokul öğrencileri için müzik ve kitaplık içeriklerini yönetmek üzere tasarlanmış bir yönetici paneli. Yöneticiler yeni şarkılar ve öyküler ekleyebilir, mevcut içerikleri düzenleyebilir ve silebilir.",
   "requestFramePermissions": [
-    "camera"
+    "microphone"
   ]
 }
